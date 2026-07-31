@@ -34,7 +34,9 @@ import {
 const ALARM_NAME = 'cookiemop-pending';
 const ALARM_MIN_MS = 30_000; // Chrome clamps MV3 alarms to a 30 s minimum
 const BADGE_COLOR = '#10b981';
-const UNINSTALL_URL = 'https://github.com/thoopring/cookiemop/issues';
+// Stable Pages URL — feedback-form embeds can change there without an
+// extension update.
+const UNINSTALL_URL = 'https://thoopring.github.io/cookiemop/goodbye.html';
 
 // ---------------------------------------------------------------------------
 // Tab → domain tracking (chrome.storage.session)

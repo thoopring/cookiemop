@@ -54,6 +54,8 @@ CookieMop is a Manifest V3 successor to Cookie AutoDelete: when you close a tab,
 
 CookieMop makes **zero network requests**. It has no backend, collects nothing, and stores your settings only in Chrome's own extension storage. See for yourself — the code is all here.
 
+Full privacy policy: https://thoopring.github.io/cookiemop/privacy.html
+
 ## License
 
 [MIT](LICENSE)
