@@ -7,3 +7,4 @@ playwright-report/
 *.zip
 .DS_Store
 Thumbs.db
+dist/

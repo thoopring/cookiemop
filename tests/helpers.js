@@ -6,7 +6,11 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const EXT_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// COOKIEMOP_EXT_PATH lets the suite run against a packaged build
+// (e.g. the unzipped store ZIP) instead of the repo working tree.
+const EXT_PATH =
+  process.env.COOKIEMOP_EXT_PATH ||
+  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export async function launchWithExtension(userDataDir = '') {
   const context = await chromium.launchPersistentContext(userDataDir, {
