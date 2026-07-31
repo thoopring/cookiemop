@@ -124,6 +124,8 @@ body {
 .row-action:hover { background: var(--bg-subtle); }
 .row-action:focus-visible { outline: 2px solid var(--emerald); outline-offset: -2px; }
 .row-action.busy { opacity: 0.55; pointer-events: none; }
+.row-action.confirm .row-title { color: #dc2626; }
+.row-action.confirm { background: #fef2f2; }
 .chevron { color: var(--ink-faint); font-size: 18px; line-height: 1; }
 
 /* Toggle switch */

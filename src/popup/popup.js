@@ -6,6 +6,17 @@ const msg = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
 
 let state = null;
 
+// Inline confirm step for cleaning a whitelisted site: first click arms the
+// row for 3 s, only a second click within that window actually cleans.
+let confirmingClean = false;
+let confirmTimer = null;
+
+function disarmCleanConfirm() {
+  if (confirmTimer) clearTimeout(confirmTimer);
+  confirmTimer = null;
+  confirmingClean = false;
+}
+
 function applyI18n() {
   document.querySelectorAll('[data-i18n]').forEach((el) => {
     const m = chrome.i18n.getMessage(el.dataset.i18n);
@@ -50,11 +61,16 @@ function render() {
     ? msg('popupProtecting')
     : msg('popupPaused');
 
-  // Clean-site subtitle
+  // Clean-site row (title switches to an inline confirm when armed)
+  const cleanRow = $('row-clean-site');
+  cleanRow.querySelector('.row-title').textContent = confirmingClean
+    ? msg('popupCleanConfirm')
+    : msg('popupCleanSiteNow');
+  cleanRow.classList.toggle('confirm', confirmingClean);
   $('clean-site-sub').textContent = onSite
     ? msg('popupCleanSiteSubN', [String(s.cookieCount)])
     : msg('popupCleanSiteSub');
-  $('row-clean-site').classList.toggle('busy', !onSite);
+  cleanRow.classList.toggle('busy', !onSite);
 
   // Stats
   $('stats-count').textContent = s.stats.todayCleaned.toLocaleString();
@@ -89,6 +105,7 @@ async function refresh() {
 document.querySelectorAll('.seg-btn').forEach((btn) => {
   btn.addEventListener('click', async () => {
     if (!state?.domain) return;
+    disarmCleanConfirm();
     const rule = btn.dataset.rule;
     state = await send({
       type: 'set-rule',
@@ -108,6 +125,17 @@ $('toggle-enabled').addEventListener('click', async () => {
 
 $('row-clean-site').addEventListener('click', async () => {
   if (!state?.domain) return;
+  if (state.rule === 'white' && !confirmingClean) {
+    // Whitelisted site: arm the inline confirm instead of cleaning right away.
+    confirmingClean = true;
+    render();
+    confirmTimer = setTimeout(() => {
+      disarmCleanConfirm();
+      render();
+    }, 3000);
+    return;
+  }
+  disarmCleanConfirm();
   const row = $('row-clean-site');
   row.classList.add('busy');
   const res = await send({

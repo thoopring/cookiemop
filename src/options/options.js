@@ -19,6 +19,10 @@ function applyI18n() {
     const m = chrome.i18n.getMessage(el.dataset.i18nPlaceholder);
     if (m) el.placeholder = m;
   });
+  document.querySelectorAll('[data-i18n-title]').forEach((el) => {
+    const m = chrome.i18n.getMessage(el.dataset.i18nTitle);
+    if (m) el.title = m;
+  });
   document.title = msg('optionsTitle');
 }
 

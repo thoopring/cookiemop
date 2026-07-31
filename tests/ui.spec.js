@@ -1,7 +1,7 @@
 // Popup and options page UI tests: rendering, persistence, rules, import.
 
 import { test, expect } from '@playwright/test';
-import { launchWithExtension, setSettings, startCookieServer } from './helpers.js';
+import { launchWithExtension, setSettings, startCookieServer, getCookies } from './helpers.js';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -145,6 +145,40 @@ test('review ask appears 7 days after install and never again once dismissed', a
   await expect(page.locator('#review-box')).toBeHidden();
   await page.reload();
   await expect(page.locator('#review-box')).toBeHidden(); // policy: never re-shown
+});
+
+test('clean-site on a whitelisted site requires an inline confirm', async () => {
+  server = await startCookieServer();
+  await setSettings(sw, {
+    delaySeconds: 60,
+    rules: { '127.0.0.1': { list: 'white', addedAt: 1 } }
+  });
+  const site = await context.newPage();
+  await site.goto(server.url);
+  await site.bringToFront();
+
+  const popup = await context.newPage();
+  await popup.goto(popupUrl());
+  await expect(popup.locator('#site-domain')).toHaveText('127.0.0.1');
+  const row = popup.locator('#row-clean-site');
+  const title = row.locator('.row-title');
+
+  // First click arms the inline confirm instead of cleaning.
+  await row.click();
+  await expect(title).toContainText('whitelisted');
+  expect((await getCookies(sw, '127.0.0.1')).length).toBeGreaterThan(0);
+
+  // No second click within 3 s → row reverts and nothing was cleaned.
+  await expect(title).toHaveText('Clean this site now', { timeout: 5000 });
+  expect((await getCookies(sw, '127.0.0.1')).length).toBeGreaterThan(0);
+
+  // Arm again and confirm → cookies are deleted despite the whitelist.
+  await row.click();
+  await expect(title).toContainText('whitelisted');
+  await row.click();
+  await expect
+    .poll(async () => (await getCookies(sw, '127.0.0.1')).length, { timeout: 5000 })
+    .toBe(0);
 });
 
 test('popup rule segment sets and clears a whitelist rule for the current site', async () => {

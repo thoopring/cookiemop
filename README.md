@@ -50,6 +50,11 @@ CookieMop is a Manifest V3 successor to Cookie AutoDelete: when you close a tab,
 | `alarms` | Firing the delayed cleanup reliably in Manifest V3 |
 | Host access (`<all_urls>`) | A cookie manager must be able to touch any site's cookies |
 
+## Known limitations
+
+- **Partitioned (CHIPS) cookies are not deleted.** Cookies that third-party embeds set with the `Partitioned` attribute cannot be enumerated per top-level site through the extension cookies API, so CookieMop leaves them alone for now. Chrome already isolates them per site, which sharply limits their tracking value.
+- **Greylist timing.** "Cleaned when the browser closes" is implemented as clean-on-next-startup — the only reliable hook Manifest V3 offers. This pass also runs when the extension itself is reloaded or updated.
+
 ## Privacy
 
 CookieMop makes **zero network requests**. It has no backend, collects nothing, and stores your settings only in Chrome's own extension storage. See for yourself — the code is all here.
