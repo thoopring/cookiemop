@@ -1,0 +1,13 @@
+{
+  "name": "cookiemop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dev tooling for CookieMop tests. The extension itself has zero dependencies.",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.0"
+  }
+}

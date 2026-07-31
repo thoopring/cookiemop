@@ -42,23 +42,38 @@ const UNINSTALL_URL = 'https://github.com/thoopring/cookiemop/issues';
 
 const tabKey = (tabId) => `tab:${tabId}`;
 
-async function recordTabUrl(tabId, url, incognito) {
-  const hostname = getHostname(url);
-  if (!hostname) return;
-  const key = tabKey(tabId);
-  const stored = await chrome.storage.session.get(key);
-  const rec = stored[key] || { hosts: [], incognito: !!incognito };
-  if (!rec.hosts.includes(hostname)) {
-    rec.hosts.push(hostname);
-    await chrome.storage.session.set({ [key]: rec });
-  }
+// Tab-record reads and writes are serialized through a promise queue:
+// onUpdated (record) and onRemoved (take) both do async get→set roundtrips,
+// and a tab closed right after navigating would otherwise let the "take"
+// read overtake the still-pending "record" write.
+let tabOpQueue = Promise.resolve();
+function queuedTabOp(fn) {
+  const run = tabOpQueue.then(fn, fn);
+  tabOpQueue = run.catch(() => {});
+  return run;
 }
 
-async function takeTabRecord(tabId) {
-  const key = tabKey(tabId);
-  const stored = await chrome.storage.session.get(key);
-  if (stored[key]) await chrome.storage.session.remove(key);
-  return stored[key] || null;
+function recordTabUrl(tabId, url, incognito) {
+  const hostname = getHostname(url);
+  if (!hostname) return Promise.resolve();
+  return queuedTabOp(async () => {
+    const key = tabKey(tabId);
+    const stored = await chrome.storage.session.get(key);
+    const rec = stored[key] || { hosts: [], incognito: !!incognito };
+    if (!rec.hosts.includes(hostname)) {
+      rec.hosts.push(hostname);
+      await chrome.storage.session.set({ [key]: rec });
+    }
+  });
+}
+
+function takeTabRecord(tabId) {
+  return queuedTabOp(async () => {
+    const key = tabKey(tabId);
+    const stored = await chrome.storage.session.get(key);
+    if (stored[key]) await chrome.storage.session.remove(key);
+    return stored[key] || null;
+  });
 }
 
 /** Snapshot all currently open tabs into the session store (used at startup). */
@@ -272,28 +287,33 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === 'install') {
     await chrome.storage.local.set({ installedAt: Date.now() });
   }
-  chrome.runtime.setUninstallURL(UNINSTALL_URL);
-  await seedOpenTabs();
-  updateBadgeForActiveTabs();
 });
 
-chrome.runtime.onStartup.addListener(async () => {
+// Runs on every worker start. storage.session is wiped when the browser
+// (or the extension) restarts, so a missing marker reliably identifies the
+// first worker of a new session — chrome.runtime.onStartup is not fired
+// consistently across environments, so we don't depend on it.
+async function init() {
   chrome.runtime.setUninstallURL(UNINSTALL_URL);
-  const settings = await getSettings();
-  if (settings.enabled) {
-    // Greylist contract: cleaned when the browser closes — implemented as
-    // clean-on-next-startup (the only reliable MV3 hook).
-    await cleanGreylistOnStartup(settings.rules, settings.scope);
-    // Cleanups scheduled right before the browser quit are overdue now.
-    await processPendingCleanups();
+  const { sessionAlive } = await chrome.storage.session.get('sessionAlive');
+  if (!sessionAlive) {
+    await chrome.storage.session.set({ sessionAlive: true });
+    const settings = await getSettings();
+    if (settings.enabled) {
+      // Greylist contract: cleaned when the browser closes — implemented as
+      // clean-on-next-startup (the only reliable MV3 hook).
+      await cleanGreylistOnStartup(settings.rules, settings.scope);
+    }
+    // Tabs that were already open before this session started (install,
+    // enable, browser start with restored tabs) must still be tracked.
+    await seedOpenTabs();
   }
-  await seedOpenTabs();
+  // Recover precise timers lost with the previous worker instance and catch
+  // up on anything overdue (including cleanups scheduled right before quit).
+  await processPendingCleanups();
   updateBadgeForActiveTabs();
-});
-
-// Worker woke up (any reason): recover precise timers lost with the old
-// worker instance and catch up on anything overdue.
-processPendingCleanups();
+}
+init();
 
 // ---------------------------------------------------------------------------
 // Messaging (popup / options)
@@ -302,7 +322,16 @@ processPendingCleanups();
 const REVIEW_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
 
 async function getPopupState() {
-  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  let [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  // When the popup HTML is opened as a regular tab (e.g. during automated
+  // tests), the "active tab" is the popup itself — fall back to the most
+  // recently accessed http(s) tab instead.
+  if (tab?.url?.startsWith(`chrome-extension://${chrome.runtime.id}`)) {
+    const candidates = (await chrome.tabs.query({}))
+      .filter((t) => getHostname(t.url))
+      .sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
+    if (candidates.length) tab = candidates[0];
+  }
   const settings = await getSettings();
   const stats = await getStats();
   const local = await chrome.storage.local.get({ installedAt: 0, reviewHandled: false });
