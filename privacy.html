@@ -1,66 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CookieMop — Privacy Policy</title>
-  <style>
-    :root { --ink: #22252b; --ink-soft: #6b7280; --emerald: #10b981; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      color: var(--ink); background: #f6f8f9; line-height: 1.65; font-size: 16px;
-    }
-    .wrap { max-width: 680px; margin: 0 auto; padding: 48px 20px 64px; }
-    .card { background: #fff; border: 1px solid #eef0f2; border-radius: 12px; padding: 32px; }
-    h1 { font-size: 26px; margin-bottom: 4px; }
-    .updated { color: var(--ink-soft); font-size: 13px; margin-bottom: 24px; }
-    h2 { font-size: 18px; margin: 24px 0 8px; }
-    p, li { color: #3f4450; margin-bottom: 10px; }
-    ul { padding-left: 22px; }
-    .promise {
-      background: #d1fae5; color: #065f46; border-radius: 12px;
-      padding: 14px 18px; font-weight: 600; margin: 18px 0;
-    }
-    a { color: var(--emerald); font-weight: 600; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .logo { width: 44px; height: 44px; border-radius: 10px; margin-bottom: 14px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — CookieMop</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#22252b;background:#fff;margin:0;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:680px;margin:0 auto;padding:56px 24px 80px;line-height:1.7}
+  .logo{display:flex;align-items:center;gap:12px;margin-bottom:36px}
+  .logo b{font-size:20px;letter-spacing:-.02em}
+  h1{font-size:32px;letter-spacing:-.02em;margin:0 0 6px}
+  .date{color:#8a919c;font-size:14px;margin-bottom:36px}
+  h2{font-size:19px;margin:34px 0 10px}
+  p,li{font-size:15.5px;color:#3a414c}
+  .callout{background:#e8faf3;border:1px solid #ccefdf;border-radius:12px;padding:16px 20px;font-size:15.5px;color:#0e6e50;font-weight:600}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14.5px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid #eef0f3;color:#3a414c}
+  th{color:#8a919c;font-size:12.5px;letter-spacing:.06em}
+  a{color:#10b981}
+  .foot{margin-top:48px;padding-top:20px;border-top:1px solid #eef0f3;font-size:13.5px;color:#8a919c}
+</style>
 </head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <svg class="logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="60" height="60" rx="16" fill="#10b981"/><circle cx="30" cy="32" r="17" fill="#ffffff"/><circle cx="24.5" cy="27" r="2.6" fill="#10b981"/><circle cx="34" cy="24.5" r="2.2" fill="#10b981"/><circle cx="27" cy="37" r="2.4" fill="#10b981"/><circle cx="35.5" cy="33.5" r="2.0" fill="#10b981"/><path d="M41 39 L52 28" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/><path d="M46.5 41.5 L54 34" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" opacity="0.7"/></svg>
-      <h1>CookieMop Privacy Policy</h1>
-      <p class="updated">Last updated: July 31, 2026</p>
-
-      <div class="promise">CookieMop collects no data. Nothing you do ever leaves your browser.</div>
-
-      <h2>What CookieMop does</h2>
-      <p>CookieMop automatically deletes cookies and site data for sites you visit when you close their tabs, except for sites you whitelist. All of this happens locally, inside your browser, using Chrome's extension APIs.</p>
-
-      <h2>Data collection</h2>
-      <ul>
-        <li><b>No personal data is collected.</b> CookieMop has no servers and makes no network requests.</li>
-        <li><b>No analytics, no telemetry, no ads, no accounts.</b></li>
-        <li><b>No browsing history is transmitted anywhere.</b> The list of sites a tab has visited is kept temporarily in Chrome's local session storage, only so the extension knows which cookies to clean, and is discarded when the tab closes.</li>
-      </ul>
-
-      <h2>What is stored, and where</h2>
-      <ul>
-        <li><b>Your settings and site rules</b> (whitelist/greylist, delay, cleanup scope) are stored in Chrome's extension storage. If you are signed into Chrome, Chrome may sync them between your own devices — this is Chrome's built-in sync, not a CookieMop server.</li>
-        <li><b>Cleaning statistics</b> (a simple counter of cookies removed) are stored locally on your device only.</li>
-      </ul>
-
-      <h2>Permissions</h2>
-      <p>CookieMop requests cookie, tab, browsing-data, storage and alarm permissions solely to perform its single purpose: deleting cookies and site data for sites you don't trust. A detailed permission-by-permission explanation is in the <a href="https://github.com/thoopring/cookiemop#permissions-explained">README</a>.</p>
-
-      <h2>Open source</h2>
-      <p>The complete source code is public at <a href="https://github.com/thoopring/cookiemop">github.com/thoopring/cookiemop</a> — the store build is produced from that exact code, so anyone can verify these claims.</p>
-
-      <h2>Changes & contact</h2>
-      <p>If this policy ever changes, the update will appear on this page with a new date. Questions or concerns: <a href="https://github.com/thoopring/cookiemop/issues">open a GitHub issue</a>.</p>
-    </div>
+<body><div class="wrap">
+  <div class="logo">
+    <svg width="36" height="36" viewBox="0 0 64 64" fill="none"><rect x="2" y="2" width="60" height="60" rx="16" fill="#10b981"/><circle cx="30" cy="32" r="17" fill="#fff"/><circle cx="24.5" cy="27" r="2.6" fill="#10b981"/><circle cx="34" cy="24.5" r="2.2" fill="#10b981"/><circle cx="27" cy="37" r="2.4" fill="#10b981"/><circle cx="35.5" cy="33.5" r="2.0" fill="#10b981"/><path d="M41 39 L52 28" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M46.5 41.5 L54 34" stroke="#fff" stroke-width="3.4" stroke-linecap="round" opacity=".7"/></svg>
+    <b>CookieMop</b>
   </div>
-</body>
-</html>
+
+  <h1>Privacy Policy</h1>
+  <div class="date">Effective date: August 18, 2026</div>
+
+  <div class="callout">The short version: CookieMop collects nothing. Everything happens locally in your browser. We have no servers, no analytics, no accounts, and no ads — so there is no data we could collect, sell, or lose.</div>
+
+  <h2>What CookieMop does</h2>
+  <p>CookieMop automatically deletes cookies and site data for websites when you close their tabs, except for sites you whitelist. All processing happens entirely on your device, inside your browser.</p>
+
+  <h2>Data we collect</h2>
+  <p><strong>None.</strong> CookieMop does not collect, transmit, store remotely, sell, or share any personal data or browsing data. The extension makes no network requests of any kind.</p>
+
+  <h2>What stays on your device</h2>
+  <table>
+    <tr><th>DATA</th><th>WHERE</th><th>PURPOSE</th></tr>
+    <tr><td>Your settings and site rules (whitelist/greylist)</td><td>Chrome <code>storage.sync</code> (your browser / your Google sync, controlled by you)</td><td>Remembering your preferences across your own devices</td></tr>
+    <tr><td>Cleaning statistics (counters only)</td><td>Chrome <code>storage.local</code> (this device only)</td><td>Showing you how many cookies were cleaned</td></tr>
+    <tr><td>Domains of currently open tabs</td><td>In-memory session storage, cleared when the browser closes</td><td>Knowing which site's cookies to clean when a tab closes</td></tr>
+  </table>
+  <p>None of this ever leaves your browser. We cannot see it — nobody can, except you.</p>
+
+  <h2>Why CookieMop needs its permissions</h2>
+  <table>
+    <tr><th>PERMISSION</th><th>WHY</th></tr>
+    <tr><td>cookies</td><td>Deleting cookies is the core function of the extension</td></tr>
+    <tr><td>tabs</td><td>Detecting when tabs close and which site they were on</td></tr>
+    <tr><td>browsingData</td><td>Optionally clearing localStorage and other site data</td></tr>
+    <tr><td>storage</td><td>Saving your settings locally</td></tr>
+    <tr><td>alarms</td><td>Running the delayed cleanup reliably</td></tr>
+    <tr><td>Access to all sites</td><td>CookieMop must be able to clean cookies for any site you choose not to whitelist</td></tr>
+  </table>
+
+  <h2>Third parties</h2>
+  <p>There are none. No analytics SDKs, no error trackers, no advertising networks, no external fonts or scripts.</p>
+
+  <h2>Open source</h2>
+  <p>Don't take our word for it — read the code. CookieMop is fully open source: <a href="https://github.com/thoopring/cookiemop">github.com/thoopring/cookiemop</a></p>
+
+  <h2>Changes to this policy</h2>
+  <p>If this policy ever changes, the new version will be posted at this address and the change will be noted in the extension's release notes. Any change that added data collection would be clearly announced before release — though we have no plans or reasons to do so.</p>
+
+  <h2>Contact</h2>
+  <p>Questions or concerns: <a href="mailto:thoopring@gmail.com">thoopring@gmail.com</a></p>
+
+  <div class="foot">CookieMop — Auto Delete Cookies on Tab Close · 100% local · Open source · No tracking</div>
+</div></body></html>
