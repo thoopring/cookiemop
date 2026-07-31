@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CookieMop — Privacy Policy</title>
+  <style>
+    :root { --ink: #22252b; --ink-soft: #6b7280; --emerald: #10b981; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--ink); background: #f6f8f9; line-height: 1.65; font-size: 16px;
+    }
+    .wrap { max-width: 680px; margin: 0 auto; padding: 48px 20px 64px; }
+    .card { background: #fff; border: 1px solid #eef0f2; border-radius: 12px; padding: 32px; }
+    h1 { font-size: 26px; margin-bottom: 4px; }
+    .updated { color: var(--ink-soft); font-size: 13px; margin-bottom: 24px; }
+    h2 { font-size: 18px; margin: 24px 0 8px; }
+    p, li { color: #3f4450; margin-bottom: 10px; }
+    ul { padding-left: 22px; }
+    .promise {
+      background: #d1fae5; color: #065f46; border-radius: 12px;
+      padding: 14px 18px; font-weight: 600; margin: 18px 0;
+    }
+    a { color: var(--emerald); font-weight: 600; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .logo { width: 44px; height: 44px; border-radius: 10px; margin-bottom: 14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <svg class="logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="60" height="60" rx="16" fill="#10b981"/><circle cx="30" cy="32" r="17" fill="#ffffff"/><circle cx="24.5" cy="27" r="2.6" fill="#10b981"/><circle cx="34" cy="24.5" r="2.2" fill="#10b981"/><circle cx="27" cy="37" r="2.4" fill="#10b981"/><circle cx="35.5" cy="33.5" r="2.0" fill="#10b981"/><path d="M41 39 L52 28" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/><path d="M46.5 41.5 L54 34" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" opacity="0.7"/></svg>
+      <h1>CookieMop Privacy Policy</h1>
+      <p class="updated">Last updated: July 31, 2026</p>
+
+      <div class="promise">CookieMop collects no data. Nothing you do ever leaves your browser.</div>
+
+      <h2>What CookieMop does</h2>
+      <p>CookieMop automatically deletes cookies and site data for sites you visit when you close their tabs, except for sites you whitelist. All of this happens locally, inside your browser, using Chrome's extension APIs.</p>
+
+      <h2>Data collection</h2>
+      <ul>
+        <li><b>No personal data is collected.</b> CookieMop has no servers and makes no network requests.</li>
+        <li><b>No analytics, no telemetry, no ads, no accounts.</b></li>
+        <li><b>No browsing history is transmitted anywhere.</b> The list of sites a tab has visited is kept temporarily in Chrome's local session storage, only so the extension knows which cookies to clean, and is discarded when the tab closes.</li>
+      </ul>
+
+      <h2>What is stored, and where</h2>
+      <ul>
+        <li><b>Your settings and site rules</b> (whitelist/greylist, delay, cleanup scope) are stored in Chrome's extension storage. If you are signed into Chrome, Chrome may sync them between your own devices — this is Chrome's built-in sync, not a CookieMop server.</li>
+        <li><b>Cleaning statistics</b> (a simple counter of cookies removed) are stored locally on your device only.</li>
+      </ul>
+
+      <h2>Permissions</h2>
+      <p>CookieMop requests cookie, tab, browsing-data, storage and alarm permissions solely to perform its single purpose: deleting cookies and site data for sites you don't trust. A detailed permission-by-permission explanation is in the <a href="https://github.com/thoopring/cookiemop#permissions-explained">README</a>.</p>
+
+      <h2>Open source</h2>
+      <p>The complete source code is public at <a href="https://github.com/thoopring/cookiemop">github.com/thoopring/cookiemop</a> — the store build is produced from that exact code, so anyone can verify these claims.</p>
+
+      <h2>Changes & contact</h2>
+      <p>If this policy ever changes, the update will appear on this page with a new date. Questions or concerns: <a href="https://github.com/thoopring/cookiemop/issues">open a GitHub issue</a>.</p>
+    </div>
+  </div>
+</body>
+</html>
