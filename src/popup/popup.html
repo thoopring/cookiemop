@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>CookieMop</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="header">
+    <img class="logo" src="../../icons/icon48.png" alt="" width="34" height="34">
+    <div class="header-text">
+      <h1>CookieMop</h1>
+      <p id="header-status" data-i18n="popupProtecting">Auto-clean is protecting this browser</p>
+    </div>
+    <button id="btn-options" class="icon-btn" data-i18n-title="popupOpenSettings" title="Settings">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </header>
+
+  <section class="current-site">
+    <p class="label" data-i18n="popupCurrentSite">CURRENT SITE</p>
+    <div class="site-row">
+      <span id="site-domain" class="site-domain">—</span>
+      <span id="cookie-pill" class="pill hidden">0 cookies</span>
+    </div>
+  </section>
+
+  <section class="segmented" id="rule-segment">
+    <button class="seg-btn" data-rule="auto" data-i18n="popupAutoClean">Auto-clean</button>
+    <button class="seg-btn" data-rule="white" data-i18n="popupWhitelist">Whitelist</button>
+    <button class="seg-btn" data-rule="grey" data-i18n="popupGreylist">Greylist</button>
+  </section>
+
+  <section class="rows">
+    <div class="row">
+      <div class="row-text">
+        <p class="row-title" data-i18n="popupDeleteOnClose">Delete on tab close</p>
+        <p class="row-sub" id="delete-sub">15s delay · cookies</p>
+      </div>
+      <button id="toggle-enabled" class="toggle" role="switch" aria-checked="true" aria-label="Delete on tab close"><span class="knob"></span></button>
+    </div>
+
+    <div class="row row-action" id="row-clean-site" role="button" tabindex="0">
+      <div class="row-text">
+        <p class="row-title" data-i18n="popupCleanSiteNow">Clean this site now</p>
+        <p class="row-sub" id="clean-site-sub" data-i18n="popupCleanSiteSub">Remove cookies immediately</p>
+      </div>
+      <span class="chevron">›</span>
+    </div>
+
+    <div class="row row-action" id="row-clean-all" role="button" tabindex="0">
+      <div class="row-text">
+        <p class="row-title" data-i18n="popupCleanAll">Clean all except open tabs</p>
+        <p class="row-sub" data-i18n="popupCleanAllSub">Whitelist and open sites are kept</p>
+      </div>
+      <span class="chevron">›</span>
+    </div>
+  </section>
+
+  <section class="review hidden" id="review-box">
+    <p><span data-i18n="popupReviewAsk">Enjoying CookieMop? A ★ review helps a lot</span></p>
+    <div class="review-actions">
+      <button id="btn-review" class="btn-mini btn-primary" data-i18n="popupReviewRate">Rate</button>
+      <button id="btn-review-dismiss" class="btn-mini" data-i18n="popupReviewDismiss">No thanks</button>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span id="stats-line" class="stats">🧹 <b id="stats-count">0</b>&nbsp;<span data-i18n="popupCleanedToday">cookies cleaned today</span></span>
+    <span class="local-only" data-i18n="popupLocalOnly">Local only</span>
+  </footer>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

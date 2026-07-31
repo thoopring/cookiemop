@@ -1,0 +1,9 @@
+# Internal planning docs — not part of the open-source release
+docs/
+
+node_modules/
+test-results/
+playwright-report/
+*.zip
+.DS_Store
+Thumbs.db

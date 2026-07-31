@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>CookieMop Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="page">
+    <header class="page-header">
+      <img src="../../icons/icon48.png" alt="" width="40" height="40" class="logo">
+      <div>
+        <h1>CookieMop</h1>
+        <p data-i18n="optionsSubtitle">Auto delete cookies on tab close — 100% local, open source</p>
+      </div>
+    </header>
+
+    <!-- Cleanup behaviour -->
+    <section class="card">
+      <h2 data-i18n="optionsCleanup">Cleanup</h2>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="delay" data-i18n="optionsDelay">Deletion delay</label>
+          <span class="field-value"><b id="delay-value">15</b>s</span>
+        </div>
+        <input type="range" id="delay" min="0" max="60" step="5" value="15">
+        <p class="hint" data-i18n="optionsDelayDesc">Wait after a tab closes before cleaning — a safety net for accidentally closed tabs.</p>
+      </div>
+
+      <div class="field">
+        <p class="field-label" data-i18n="optionsScope">What to delete</p>
+        <label class="radio">
+          <input type="radio" name="scope" value="cookies">
+          <span class="radio-text"><b data-i18n="scopeCookies">Cookies only</b>
+          <small data-i18n="scopeCookiesDesc">Recommended default</small></span>
+        </label>
+        <label class="radio">
+          <input type="radio" name="scope" value="storage">
+          <span class="radio-text"><b data-i18n="scopeStorage">Cookies + localStorage</b>
+          <small data-i18n="scopeStorageDesc">Also clears localStorage and sessionStorage</small></span>
+        </label>
+        <label class="radio">
+          <input type="radio" name="scope" value="all">
+          <span class="radio-text"><b data-i18n="scopeAll">Cookies + all site data</b>
+          <small data-i18n="scopeAllDesc">Also clears IndexedDB, CacheStorage and Service Workers</small></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Site rules -->
+    <section class="card">
+      <h2 data-i18n="optionsRules">Site rules</h2>
+      <div class="tabs" id="rule-tabs">
+        <button class="tab active" data-tab="all"><span data-i18n="tabAll">All</span> (<span id="count-all">0</span>)</button>
+        <button class="tab" data-tab="white" data-i18n="tabWhitelist">Whitelist</button>
+        <button class="tab" data-tab="grey" data-i18n="tabGreylist">Greylist</button>
+      </div>
+      <ul class="rule-list" id="rule-list"></ul>
+      <p class="empty hidden" id="rule-empty" data-i18n="rulesEmpty">No rules yet — add a domain below or from the popup.</p>
+      <div class="add-row">
+        <input type="text" id="add-domain" data-i18n-placeholder="addPlaceholder" placeholder="Add a domain… e.g. example.com" spellcheck="false">
+        <select id="add-list" aria-label="List">
+          <option value="white" data-i18n="tabWhitelist">Whitelist</option>
+          <option value="grey" data-i18n="tabGreylist">Greylist</option>
+        </select>
+        <button id="add-btn" class="btn-primary" data-i18n="addBtn">Add</button>
+      </div>
+    </section>
+
+    <!-- Import -->
+    <section class="card">
+      <h2 data-i18n="optionsImport">Import from Cookie AutoDelete</h2>
+      <p class="hint" data-i18n="importDesc">Coming from Cookie AutoDelete? Import its exported expression list (JSON) — whitelist and greylist entries are converted automatically.</p>
+      <div class="import-row">
+        <input type="file" id="import-file" accept=".json,application/json" class="hidden">
+        <button id="import-btn" class="btn-secondary" data-i18n="importBtn">Choose JSON file…</button>
+        <span id="import-result" class="import-result"></span>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="card">
+      <h2 data-i18n="optionsStats">Statistics</h2>
+      <div class="stats-grid">
+        <div class="stat">
+          <p class="stat-num" id="stat-today">0</p>
+          <p class="stat-label" data-i18n="statsToday">cleaned today</p>
+        </div>
+        <div class="stat">
+          <p class="stat-num" id="stat-total">0</p>
+          <p class="stat-label" data-i18n="statsTotal">cleaned in total</p>
+        </div>
+      </div>
+      <button id="stats-reset" class="btn-ghost" data-i18n="statsReset">Reset statistics</button>
+    </section>
+
+    <footer class="page-footer">
+      <span data-i18n="optionsFooter">100% local · no analytics · no accounts</span>
+      <a href="https://github.com/thoopring/cookiemop" target="_blank" rel="noopener">GitHub</a>
+    </footer>
+  </div>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>
