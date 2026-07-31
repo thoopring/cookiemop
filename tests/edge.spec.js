@@ -93,10 +93,12 @@ test('edge ⑤: greylisted domains are cleaned when the browser restarts', async
   expect((await getCookies(sw, '127.0.0.1')).length).toBeGreaterThan(0);
   await context.close();
 
-  // Session 2: same profile → onStartup greylist pass cleans the cookies.
+  // Session 2: same profile → the new-session greylist pass cleans the
+  // cookies. Poll: extension init can be slow on a loaded machine.
   ({ context, sw } = await launchWithExtension(userDataDir));
-  await sleep(2000);
-  expect(await getCookies(sw, '127.0.0.1')).toHaveLength(0);
+  await expect
+    .poll(async () => (await getCookies(sw, '127.0.0.1')).length, { timeout: 15_000 })
+    .toBe(0);
 
   await context.close();
   await server.close();
