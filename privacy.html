@@ -28,7 +28,7 @@
   </div>
 
   <h1>Privacy Policy</h1>
-  <div class="date">Effective date: August 18, 2026</div>
+  <div class="date">Effective date: August 18, 2026 · Updated for Pro: August 21, 2026</div>
 
   <div class="callout">The short version: CookieMop collects nothing. Everything happens locally in your browser. We have no servers, no analytics, no accounts, and no ads — so there is no data we could collect, sell, or lose.</div>
 
@@ -43,6 +43,7 @@
     <tr><th>DATA</th><th>WHERE</th><th>PURPOSE</th></tr>
     <tr><td>Your settings and site rules (whitelist/greylist)</td><td>Chrome <code>storage.sync</code> (your browser / your Google sync, controlled by you)</td><td>Remembering your preferences across your own devices</td></tr>
     <tr><td>Cleaning statistics (counters only)</td><td>Chrome <code>storage.local</code> (this device only)</td><td>Showing you how many cookies were cleaned</td></tr>
+    <tr><td>Pro license key, if you bought Pro (contains the email and order number you purchased with)</td><td>Chrome <code>storage.sync</code> (your browser / your Google sync, controlled by you)</td><td>Unlocking Pro features. The key is verified on your device and is never sent anywhere</td></tr>
     <tr><td>Domains of currently open tabs</td><td>In-memory session storage, cleared when the browser closes</td><td>Knowing which site's cookies to clean when a tab closes</td></tr>
   </table>
   <p>None of this ever leaves your browser. We cannot see it — nobody can, except you.</p>
@@ -58,8 +59,12 @@
     <tr><td>Access to all sites</td><td>CookieMop must be able to clean cookies for any site you choose not to whitelist</td></tr>
   </table>
 
+  <h2>If you buy CookieMop Pro</h2>
+  <p>Payment is handled by Lemon Squeezy, who act as merchant of record and receive your payment and billing details directly — we never see your card. They send us your email address and order number so a license key can be issued and emailed to you.</p>
+  <p><strong>The extension itself still makes no network requests, even with Pro.</strong> Your license key is verified locally on your device against a public key built into the extension. There is no license server, no activation call, and no usage reporting. Pro works offline, and it keeps working even if our payment infrastructure disappears.</p>
+
   <h2>Third parties</h2>
-  <p>There are none. No analytics SDKs, no error trackers, no advertising networks, no external fonts or scripts.</p>
+  <p>Inside the extension there are none. No analytics SDKs, no error trackers, no advertising networks, no external fonts or scripts. Lemon Squeezy (payments) and Resend (the one email that delivers your license key) are involved only if you choose to buy Pro, and only outside the extension.</p>
 
   <h2>Open source</h2>
   <p>Don't take our word for it — read the code. CookieMop is fully open source: <a href="https://github.com/thoopring/cookiemop">github.com/thoopring/cookiemop</a></p>
