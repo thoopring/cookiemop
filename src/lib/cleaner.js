@@ -1,12 +1,29 @@
 // Cookie & site-data deletion engine.
 // All deletions are local chrome.* API calls — nothing ever leaves the browser.
 
-import { getRuleFor } from './domain.js';
+import { getRuleFor, hostMatchesRule } from './domain.js';
 import { addCleanedCount } from './store.js';
 
 // Chrome cookie store ids: "0" = default profile, "1" = incognito (spanning mode).
 export const STORE_DEFAULT = '0';
 export const STORE_INCOGNITO = '1';
+
+/**
+ * Build a predicate that answers "is this cookie individually protected?"
+ * from the per-cookie whitelist (Pro). With an empty map — every free user —
+ * it returns false immediately, so cleaning behaves exactly as in v1.0.
+ */
+export function makeKeepCookiePredicate(keepCookies) {
+  const entries = Object.entries(keepCookies || {});
+  if (!entries.length) return () => false;
+  return (cookie) => {
+    const host = cookie.domain.replace(/^\./, '');
+    for (const [domain, names] of entries) {
+      if (hostMatchesRule(host, domain) && names.includes(cookie.name)) return true;
+    }
+    return false;
+  };
+}
 
 function cookieUrl(cookie) {
   const host = cookie.domain.replace(/^\./, '');
@@ -110,11 +127,13 @@ export async function countCookies(domain, storeId = STORE_DEFAULT) {
  * Skips cookies that are covered by a whitelist or greylist rule
  * (a whitelisted subdomain survives cleanup of its parent domain).
  */
-export async function autoCleanDomain({ domain, hostnames, storeId, rules, scope }) {
+export async function autoCleanDomain({ domain, hostnames, storeId, rules, scope, keepCookies }) {
+  const isKept = makeKeepCookiePredicate(keepCookies);
   const removed = await cleanCookiesForDomain(domain, {
     storeId,
     filter: (cookie) => {
       const cookieHost = cookie.domain.replace(/^\./, '');
+      if (isKept(cookie)) return false;
       return getRuleFor(cookieHost, rules) === null;
     }
   });
@@ -127,8 +146,15 @@ export async function autoCleanDomain({ domain, hostnames, storeId, rules, scope
 /**
  * Manual "clean this site now": explicit user action, ignores list rules.
  */
-export async function manualCleanSite({ domain, hostnames, storeId, scope }) {
-  const removed = await cleanCookiesForDomain(domain, { storeId });
+export async function manualCleanSite({ domain, hostnames, storeId, scope, keepCookies }) {
+  // Individually kept cookies survive even this explicit action — that is
+  // the entire promise of the per-cookie whitelist ("clean this site but
+  // keep my login"). List rules are still overridden, as before.
+  const isKept = makeKeepCookiePredicate(keepCookies);
+  const removed = await cleanCookiesForDomain(domain, {
+    storeId,
+    filter: (cookie) => !isKept(cookie)
+  });
   await cleanSiteData(hostnames || [domain], scope);
   await addCleanedCount(removed);
   return removed;
@@ -139,7 +165,8 @@ export async function manualCleanSite({ domain, hostnames, storeId, scope }) {
  * Respects whitelist and greylist rules; skips domains open in any tab.
  * `openDomains` is a Set of registrable domains currently open.
  */
-export async function cleanAllExceptOpen({ openDomains, rules, getDomain }) {
+export async function cleanAllExceptOpen({ openDomains, rules, getDomain, keepCookies }) {
+  const isKept = makeKeepCookiePredicate(keepCookies);
   const storeIds = await getStoreIds();
   let removed = 0;
   for (const id of storeIds) {
@@ -153,6 +180,7 @@ export async function cleanAllExceptOpen({ openDomains, rules, getDomain }) {
       const cookieHost = cookie.domain.replace(/^\./, '');
       if (openDomains.has(getDomain(cookieHost))) continue;
       if (getRuleFor(cookieHost, rules) !== null) continue;
+      if (isKept(cookie)) continue;
       if (await removeCookie(cookie)) removed++;
     }
   }
@@ -164,7 +192,8 @@ export async function cleanAllExceptOpen({ openDomains, rules, getDomain }) {
  * Browser-startup pass: greylisted domains are cleaned "on browser close",
  * implemented as clean-on-next-startup (the only reliable MV3 hook).
  */
-export async function cleanGreylistOnStartup(rules, scope) {
+export async function cleanGreylistOnStartup(rules, scope, keepCookies) {
+  const isKept = makeKeepCookiePredicate(keepCookies);
   let removed = 0;
   const greyDomains = Object.entries(rules)
     .filter(([, r]) => r.list === 'grey')
@@ -175,6 +204,7 @@ export async function cleanGreylistOnStartup(rules, scope) {
       filter: (cookie) => {
         const cookieHost = cookie.domain.replace(/^\./, '');
         hostnames.add(cookieHost);
+        if (isKept(cookie)) return false;
         // A more specific whitelist rule wins over the greylist entry.
         return getRuleFor(cookieHost, rules) !== 'white';
       }

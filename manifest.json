@@ -3,7 +3,7 @@
   "name": "__MSG_extName__",
   "short_name": "CookieMop",
   "description": "__MSG_extDesc__",
-  "version": "1.0.0",
+  "version": "1.5.0",
   "default_locale": "en",
   "minimum_chrome_version": "120",
   "icons": {

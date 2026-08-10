@@ -202,7 +202,8 @@ async function processPendingCleanups() {
       hostnames: pending.hostnames,
       storeId: pending.storeId,
       rules: settings.rules,
-      scope: settings.scope
+      scope: settings.scope,
+      keepCookies: settings.keepCookies
     });
   }
 
@@ -304,7 +305,7 @@ async function init() {
     if (settings.enabled) {
       // Greylist contract: cleaned when the browser closes — implemented as
       // clean-on-next-startup (the only reliable MV3 hook).
-      await cleanGreylistOnStartup(settings.rules, settings.scope);
+      await cleanGreylistOnStartup(settings.rules, settings.scope, settings.keepCookies);
     }
     // Tabs that were already open before this session started (install,
     // enable, browser start with restored tabs) must still be tracked.
@@ -392,7 +393,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           domain: message.domain,
           hostnames: message.hostnames || [message.domain],
           storeId: message.storeId || STORE_DEFAULT,
-          scope: settings.scope
+          scope: settings.scope,
+          keepCookies: settings.keepCookies
         });
         updateBadgeForActiveTabs();
         sendResponse({ removed });
@@ -409,7 +411,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         const removed = await cleanAllExceptOpen({
           openDomains: allOpen,
           rules: settings.rules,
-          getDomain: getRegistrableDomain
+          getDomain: getRegistrableDomain,
+          keepCookies: settings.keepCookies
         });
         updateBadgeForActiveTabs();
         sendResponse({ removed });

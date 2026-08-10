@@ -10,12 +10,89 @@ export const DEFAULT_SETTINGS = {
   // 'cookies' | 'storage' (cookies + local/sessionStorage) | 'all' (+ IndexedDB, CacheStorage, Service Workers)
   scope: 'cookies',
   // { "example.com": { list: "white" | "grey", addedAt: epochMs } }
-  rules: {}
+  // This stays the one rule set the cleaning engine reads. Pro's rule
+  // profiles swap its contents rather than replacing the structure, so free
+  // users and the v1.0 engine paths are untouched.
+  rules: {},
+
+  // --- Pro (v1.5). Empty for free users, so behaviour is unchanged. ---
+
+  // [{ id, name, rules }] — saved rule sets a Pro user switches between.
+  profiles: [],
+  // id of the profile currently loaded into `rules`, or null when none is.
+  activeProfileId: null,
+  // { "example.com": ["session_id", ...] } — cookie names kept even when the
+  // site is cleaned. Honoured by the engine regardless of licence state: a
+  // lapsed licence must never cause cookies the user marked "keep" to be
+  // deleted. Editing this map is what Pro gates.
+  keepCookies: {}
 };
 
 export async function getSettings() {
   const stored = await chrome.storage.sync.get(DEFAULT_SETTINGS);
-  return { ...DEFAULT_SETTINGS, ...stored, rules: stored.rules || {} };
+  return {
+    ...DEFAULT_SETTINGS,
+    ...stored,
+    // Settings saved by v1.0 have no Pro keys at all. Filling them in here
+    // means no migration step ever has to rewrite a live user's storage.
+    rules: stored.rules || {},
+    profiles: Array.isArray(stored.profiles) ? stored.profiles : [],
+    keepCookies: stored.keepCookies || {}
+  };
+}
+
+// --- Rule profiles (Pro) --------------------------------------------------
+// A profile is a named snapshot of `rules`. Switching saves the live rules
+// back into the profile they came from, then loads the target's rules.
+
+export async function saveProfile(name) {
+  const { rules, profiles } = await getSettings();
+  const profile = {
+    id: `p${Date.now().toString(36)}`,
+    name: String(name).trim().slice(0, 40),
+    rules: { ...rules }
+  };
+  const next = [...profiles, profile];
+  await chrome.storage.sync.set({ profiles: next, activeProfileId: profile.id });
+  return profile;
+}
+
+export async function switchProfile(profileId) {
+  const { rules, profiles, activeProfileId } = await getSettings();
+  const target = profiles.find((p) => p.id === profileId);
+  if (!target) return null;
+
+  const updated = profiles.map((p) =>
+    p.id === activeProfileId ? { ...p, rules: { ...rules } } : p
+  );
+  await chrome.storage.sync.set({
+    profiles: updated,
+    activeProfileId: target.id,
+    rules: { ...target.rules }
+  });
+  return target;
+}
+
+export async function deleteProfile(profileId) {
+  const { profiles, activeProfileId } = await getSettings();
+  await chrome.storage.sync.set({
+    profiles: profiles.filter((p) => p.id !== profileId),
+    activeProfileId: activeProfileId === profileId ? null : activeProfileId
+  });
+}
+
+// --- Per-cookie whitelist (Pro) -------------------------------------------
+
+export async function setKeptCookies(domain, cookieNames) {
+  const { keepCookies } = await getSettings();
+  const names = [...new Set(cookieNames.map((n) => String(n).trim()).filter(Boolean))];
+  if (names.length) {
+    keepCookies[domain] = names;
+  } else {
+    delete keepCookies[domain];
+  }
+  await chrome.storage.sync.set({ keepCookies });
+  return keepCookies;
 }
 
 export async function saveSettings(patch) {

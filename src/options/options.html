@@ -69,6 +69,37 @@
       </div>
     </section>
 
+    <!-- Rule profiles (Pro) -->
+    <section class="card">
+      <div class="pro-head">
+        <h2 data-i18n="profilesTitle">Rule profiles</h2>
+        <span class="pro-tag" data-i18n="proLocked">Pro feature</span>
+      </div>
+      <p class="hint" data-i18n="profilesDesc">Keep separate rules for work and personal browsing, and switch between them with one click.</p>
+      <ul class="rule-list" id="profile-list"></ul>
+      <div class="add-row">
+        <input type="text" id="profile-name" data-i18n-placeholder="profilesPlaceholder" placeholder="Name this rule set… e.g. Work" spellcheck="false">
+        <button id="profile-save" class="btn-secondary" data-i18n="profilesSave">Save current rules</button>
+      </div>
+      <p class="upsell hidden" id="profile-upsell"></p>
+    </section>
+
+    <!-- Per-cookie whitelist (Pro) -->
+    <section class="card">
+      <div class="pro-head">
+        <h2 data-i18n="keepTitle">Keep specific cookies</h2>
+        <span class="pro-tag" data-i18n="proLocked">Pro feature</span>
+      </div>
+      <p class="hint" data-i18n="keepDesc">Clean a site as usual, but hold on to the one cookie that keeps you logged in. Cookie names come from your browser's developer tools.</p>
+      <ul class="rule-list" id="keep-list"></ul>
+      <div class="add-row">
+        <input type="text" id="keep-domain" data-i18n-placeholder="keepDomainPlaceholder" placeholder="example.com" spellcheck="false">
+        <input type="text" id="keep-names" data-i18n-placeholder="keepNamesPlaceholder" placeholder="session_id, auth_token" spellcheck="false">
+        <button id="keep-save" class="btn-secondary" data-i18n="keepSave">Keep these</button>
+      </div>
+      <p class="upsell hidden" id="keep-upsell"></p>
+    </section>
+
     <!-- Import -->
     <section class="card">
       <h2 data-i18n="optionsImport">Import from Cookie AutoDelete</h2>
@@ -94,6 +125,45 @@
         </div>
       </div>
       <button id="stats-reset" class="btn-ghost" data-i18n="statsReset">Reset statistics</button>
+    </section>
+
+    <!-- Pro -->
+    <section class="card pro-card" id="pro-card">
+      <div class="pro-head">
+        <h2 data-i18n="proTitle">CookieMop Pro</h2>
+        <span class="pro-badge hidden" id="pro-badge" data-i18n="proActive">Active</span>
+      </div>
+
+      <!-- Shown while Pro is not active -->
+      <div id="pro-offer">
+        <p class="hint" data-i18n="proPitch">The core of CookieMop is free forever. Pro adds power-user extras — one payment, no subscription.</p>
+        <ul class="pro-list">
+          <li data-i18n="proFeatureProfiles">Rule profiles — separate rules for work and personal browsing, switched with one click</li>
+          <li data-i18n="proFeatureCookieWhitelist">Per-cookie whitelist — clean a site but keep the one cookie that keeps you logged in</li>
+        </ul>
+        <p class="pro-price"><b data-i18n="proPrice">$9.99</b> <span data-i18n="proPriceNote">once — we have no servers, so we don't charge you monthly.</span></p>
+        <div class="pro-actions">
+          <a id="pro-buy" class="btn-primary" href="#" target="_blank" rel="noopener" data-i18n="proBuy">Get Pro</a>
+        </div>
+        <p class="hint" data-i18n="proLocalNote">Your license is verified on this device. CookieMop still makes zero network requests, even with Pro.</p>
+      </div>
+
+      <!-- License key entry -->
+      <div class="pro-activate" id="pro-activate">
+        <label class="field-label" for="license-input" data-i18n="proHaveKey">Already bought it? Paste your license key</label>
+        <div class="add-row">
+          <input type="text" id="license-input" spellcheck="false" autocomplete="off"
+                 data-i18n-placeholder="proKeyPlaceholder" placeholder="CM1.…">
+          <button id="license-activate" class="btn-primary" data-i18n="proActivate">Activate</button>
+        </div>
+        <p class="license-result" id="license-result"></p>
+      </div>
+
+      <!-- Shown while Pro is active -->
+      <div id="pro-status" class="hidden">
+        <p class="pro-licensed" id="pro-licensed"></p>
+        <button id="license-remove" class="btn-ghost" data-i18n="proRemove">Remove license from this device</button>
+      </div>
     </section>
 
     <footer class="page-footer">

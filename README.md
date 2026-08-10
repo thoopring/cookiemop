@@ -50,10 +50,22 @@ CookieMop is a Manifest V3 successor to Cookie AutoDelete: when you close a tab,
 | `alarms` | Firing the delayed cleanup reliably in Manifest V3 |
 | Host access (`<all_urls>`) | A cookie manager must be able to touch any site's cookies |
 
+## CookieMop Pro
+
+The core of CookieMop is free forever, and nothing that was free in v1.0 has moved behind a payment. Pro is additive: rule profiles, a per-cookie whitelist, and more to come. It costs $9.99 once — we have no servers, so we don't charge you monthly.
+
+**Pro does not add a single network request.** There is no license server to phone. Your key is a payload signed with an ECDSA P-256 key; the extension verifies that signature locally against a public key compiled into the build. Read it yourself:
+
+- Verification: [`src/lib/license.js`](src/lib/license.js) — `verifyLicenseKey()` uses `crypto.subtle.verify`, nothing else
+- Issuing (server-side, never shipped in the extension): [`server/`](server/)
+
+Because verification is offline, Pro keeps working if this project's payment infrastructure ever disappears, and it works with no internet connection at all. Settings export and import stay free permanently — your rules are yours, licensed or not.
+
 ## Known limitations
 
 - **Partitioned (CHIPS) cookies are not deleted.** Cookies that third-party embeds set with the `Partitioned` attribute cannot be enumerated per top-level site through the extension cookies API, so CookieMop leaves them alone for now. Chrome already isolates them per site, which sharply limits their tracking value.
 - **Greylist timing.** "Cleaned when the browser closes" is implemented as clean-on-next-startup — the only reliable hook Manifest V3 offers. This pass also runs when the extension itself is reloaded or updated.
+- **Pro licensing is honour-based.** Verification happens on your device, so someone determined to patch the extension can bypass it. That is the price of never contacting a server, and we think it is the right trade.
 
 ## Privacy
 

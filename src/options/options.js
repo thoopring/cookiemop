@@ -2,7 +2,25 @@
 // shared lib modules — no build step, no external dependencies.
 
 import { normalizeDomainInput } from '../lib/domain.js';
-import { getSettings, saveSettings, setRule, getStats, resetStats } from '../lib/store.js';
+import {
+  getSettings,
+  saveSettings,
+  setRule,
+  getStats,
+  resetStats,
+  saveProfile,
+  switchProfile,
+  deleteProfile,
+  setKeptCookies
+} from '../lib/store.js';
+import {
+  activateLicense,
+  deactivateLicense,
+  getStoredLicense,
+  isPro,
+  LicenseStatus
+} from '../lib/license.js';
+import { CHECKOUT_URL } from '../lib/config.js';
 
 const $ = (id) => document.getElementById(id);
 const msg = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
@@ -190,6 +208,214 @@ $('import-file').addEventListener('change', async () => {
   $('import-file').value = '';
 });
 
+// --- Pro gating ---
+//
+// The upsell appears only when someone actually reaches for a Pro feature,
+// and it says what they would get rather than what they are missing. There
+// is no timer, no banner and nothing to dismiss.
+
+function showUpsell(elementId, benefitKey) {
+  const el = $(elementId);
+  el.textContent = '';
+  el.append(document.createTextNode(msg(benefitKey) + ' '));
+  const link = document.createElement('a');
+  link.href = '#pro-card';
+  link.textContent = msg('proSeeDetails');
+  link.addEventListener('click', () => {
+    $('pro-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+  el.append(link);
+  el.classList.remove('hidden');
+}
+
+/** Runs `action` when licensed; otherwise surfaces the contextual upsell. */
+async function withPro(elementId, benefitKey, action) {
+  if (await isPro()) {
+    $(elementId).classList.add('hidden');
+    return action();
+  }
+  showUpsell(elementId, benefitKey);
+}
+
+// --- Rule profiles (Pro) ---
+
+function renderProfiles() {
+  const list = $('profile-list');
+  list.textContent = '';
+  for (const profile of settings.profiles) {
+    const li = document.createElement('li');
+    li.className = 'rule-item';
+
+    const info = document.createElement('div');
+    info.className = 'rule-info';
+    const name = document.createElement('p');
+    name.className = 'rule-domain';
+    name.textContent = profile.name;
+    const meta = document.createElement('p');
+    meta.className =
+      profile.id === settings.activeProfileId ? 'profile-active' : 'rule-added';
+    meta.textContent =
+      profile.id === settings.activeProfileId
+        ? msg('profilesInUse')
+        : msg('profilesRuleCount', [String(Object.keys(profile.rules || {}).length)]);
+    info.append(name, meta);
+
+    const actions = document.createElement('div');
+    actions.className = 'rule-actions';
+    if (profile.id !== settings.activeProfileId) {
+      const useBtn = document.createElement('button');
+      useBtn.className = 'btn-tiny';
+      useBtn.textContent = msg('profilesUse');
+      useBtn.addEventListener('click', () =>
+        withPro('profile-upsell', 'profilesBenefit', async () => {
+          await switchProfile(profile.id);
+          settings = await getSettings();
+          renderProfiles();
+          renderRules();
+        })
+      );
+      actions.append(useBtn);
+    }
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'rule-remove';
+    removeBtn.textContent = '×';
+    removeBtn.title = msg('profilesDelete');
+    removeBtn.addEventListener('click', async () => {
+      await deleteProfile(profile.id);
+      settings = await getSettings();
+      renderProfiles();
+    });
+    actions.append(removeBtn);
+
+    li.append(info, actions);
+    list.appendChild(li);
+  }
+}
+
+$('profile-save').addEventListener('click', () =>
+  withPro('profile-upsell', 'profilesBenefit', async () => {
+    const name = $('profile-name').value.trim();
+    if (!name) {
+      $('profile-name').focus();
+      return;
+    }
+    await saveProfile(name);
+    $('profile-name').value = '';
+    settings = await getSettings();
+    renderProfiles();
+  })
+);
+
+// --- Per-cookie whitelist (Pro) ---
+
+function renderKeepCookies() {
+  const list = $('keep-list');
+  list.textContent = '';
+  for (const [domain, names] of Object.entries(settings.keepCookies)) {
+    const li = document.createElement('li');
+    li.className = 'rule-item';
+
+    const info = document.createElement('div');
+    info.className = 'rule-info';
+    const title = document.createElement('p');
+    title.className = 'rule-domain';
+    title.textContent = domain;
+    const detail = document.createElement('p');
+    detail.className = 'keep-names';
+    detail.textContent = names.join(', ');
+    info.append(title, detail);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'rule-remove';
+    removeBtn.textContent = '×';
+    removeBtn.title = msg('keepRemove');
+    removeBtn.addEventListener('click', async () => {
+      await setKeptCookies(domain, []);
+      settings = await getSettings();
+      renderKeepCookies();
+    });
+
+    li.append(info, removeBtn);
+    list.appendChild(li);
+  }
+}
+
+$('keep-save').addEventListener('click', () =>
+  withPro('keep-upsell', 'keepBenefit', async () => {
+    const domain = normalizeDomainInput($('keep-domain').value);
+    const names = $('keep-names').value.split(',').map((n) => n.trim()).filter(Boolean);
+    if (!domain || !names.length) {
+      $(domain ? 'keep-names' : 'keep-domain').focus();
+      return;
+    }
+    await setKeptCookies(domain, names);
+    $('keep-domain').value = '';
+    $('keep-names').value = '';
+    settings = await getSettings();
+    renderKeepCookies();
+  })
+);
+
+// --- Pro / license ---
+
+function licenseMessage(status) {
+  switch (status) {
+    case LicenseStatus.VALID:
+      return msg('proActivated');
+    case LicenseStatus.EMPTY:
+      return msg('proErrorEmpty');
+    case LicenseStatus.UNSUPPORTED:
+      return msg('proErrorUnsupported');
+    default:
+      // Malformed and bad-signature read the same to the user: the key they
+      // pasted is not a working key. No need to teach them the difference.
+      return msg('proErrorInvalid');
+  }
+}
+
+async function renderPro() {
+  const pro = await isPro();
+  const license = pro ? await getStoredLicense() : null;
+
+  $('pro-badge').classList.toggle('hidden', !pro);
+  $('pro-offer').classList.toggle('hidden', pro);
+  $('pro-activate').classList.toggle('hidden', pro);
+  $('pro-status').classList.toggle('hidden', !pro);
+
+  if (pro && license) {
+    const licensed = $('pro-licensed');
+    licensed.textContent = '';
+    licensed.append(
+      document.createTextNode(msg('proLicensedTo') + ' '),
+      Object.assign(document.createElement('b'), { textContent: license.email })
+    );
+  }
+  $('pro-buy').href = CHECKOUT_URL;
+}
+
+$('license-activate').addEventListener('click', async () => {
+  const result = $('license-result');
+  const { status } = await activateLicense($('license-input').value);
+  result.textContent = licenseMessage(status);
+  result.classList.toggle('error', status !== LicenseStatus.VALID);
+  if (status === LicenseStatus.VALID) {
+    $('license-input').value = '';
+    await renderPro();
+    renderRules();
+  }
+});
+
+$('license-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') $('license-activate').click();
+});
+
+$('license-remove').addEventListener('click', async () => {
+  await deactivateLicense();
+  $('license-result').textContent = '';
+  await renderPro();
+  renderRules();
+});
+
 // --- Stats ---
 
 $('stats-reset').addEventListener('click', async () => {
@@ -205,6 +431,9 @@ $('stats-reset').addEventListener('click', async () => {
   renderSettings();
   renderRules();
   renderStats();
+  renderProfiles();
+  renderKeepCookies();
+  renderPro();
 })();
 
 // Live-refresh rules if changed from the popup while this page is open.
@@ -214,4 +443,9 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
     renderRules();
   }
   if (area === 'local' && changes.stats) renderStats();
+  // A license activated on another device arrives through sync.
+  if (area === 'sync' && changes.license) {
+    renderPro();
+    renderRules();
+  }
 });
