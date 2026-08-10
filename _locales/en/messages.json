@@ -87,6 +87,8 @@
   "proHaveKey": { "message": "Already bought it? Paste your license key" },
   "proKeyPlaceholder": { "message": "CM1.…" },
   "proActivate": { "message": "Activate" },
+  "proLookupLink": { "message": "Look up your key" },
+  "proLookupNote": { "message": "— enter the email and order number from your receipt. The same key comes back every time, so a lost key is never a problem." },
   "proActivated": { "message": "Pro is active. Thank you." },
   "proErrorEmpty": { "message": "Paste your license key first." },
   "proErrorInvalid": { "message": "That key isn't valid. Check you copied all of it from the email." },

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Get your license key — CookieMop Pro</title>
+<style>
+  :root { --ink:#22252b; --soft:#6b7280; --faint:#9ca3af; --emerald:#10b981; --line:#eef0f2; --bg:#f6f8f9; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.6}
+  .wrap{max-width:560px;margin:0 auto;padding:48px 20px 64px}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+  .brand b{font-size:18px;letter-spacing:-.01em}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:28px}
+  h1{font-size:24px;letter-spacing:-.01em;margin-bottom:6px}
+  .sub{color:var(--soft);font-size:14.5px;margin-bottom:4px}
+  .sub-ko{color:var(--faint);font-size:13px;margin-bottom:22px}
+  label{display:block;font-size:13.5px;font-weight:700;margin-bottom:6px}
+  label span{font-weight:400;color:var(--faint)}
+  input{width:100%;font-size:15px;font-family:inherit;padding:11px 13px;border:1px solid #e2e5e9;border-radius:12px;outline:none;margin-bottom:16px}
+  input:focus{border-color:var(--emerald)}
+  button{font-family:inherit;font-weight:700;cursor:pointer;border:none;border-radius:12px}
+  .primary{width:100%;background:var(--emerald);color:#fff;font-size:15px;padding:12px 0}
+  .primary:hover{background:#0ea371}
+  .primary:disabled{opacity:.6;cursor:default}
+  .msg{font-size:14px;margin-top:16px;padding:12px 14px;border-radius:12px;display:none}
+  .msg.error{display:block;background:#fef2f2;color:#b91c1c}
+  .result{display:none;margin-top:22px;padding-top:22px;border-top:1px solid var(--line)}
+  .result.show{display:block}
+  .result h2{font-size:14px;font-weight:700;margin-bottom:8px}
+  .keybox{display:flex;gap:8px;align-items:stretch}
+  .keybox code{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 13px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;word-break:break-all;line-height:1.5}
+  .copy{background:var(--ink);color:#fff;font-size:13px;padding:0 16px;white-space:nowrap}
+  .copy:hover{background:#000}
+  .steps{margin-top:18px;font-size:13.5px;color:var(--soft)}
+  .steps li{margin-left:18px;padding:2px 0}
+  .foot{margin-top:20px;font-size:13px;color:var(--soft);background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .foot-ko{color:var(--faint);font-size:12.5px;margin-top:2px}
+  a{color:var(--emerald)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <svg width="32" height="32" viewBox="0 0 64 64" fill="none"><rect x="2" y="2" width="60" height="60" rx="16" fill="#10b981"/><circle cx="30" cy="32" r="17" fill="#fff"/><circle cx="24.5" cy="27" r="2.6" fill="#10b981"/><circle cx="34" cy="24.5" r="2.2" fill="#10b981"/><circle cx="27" cy="37" r="2.4" fill="#10b981"/><circle cx="35.5" cy="33.5" r="2" fill="#10b981"/><path d="M41 39 L52 28" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M46.5 41.5 L54 34" stroke="#fff" stroke-width="3.4" stroke-linecap="round" opacity=".7"/></svg>
+    <b>CookieMop</b>
+  </div>
+
+  <div class="card">
+    <h1>Get your license key</h1>
+    <p class="sub">Find your order number in the receipt email from Lemon Squeezy.</p>
+    <p class="sub-ko">결제 영수증 메일에서 주문번호를 확인하세요.</p>
+
+    <form id="form" novalidate>
+      <label for="email">Email <span>· 결제에 사용한 이메일</span></label>
+      <input id="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+
+      <label for="order">Order number <span>· 주문번호</span></label>
+      <input id="order" type="text" inputmode="numeric" autocomplete="off" placeholder="12345" required>
+
+      <button class="primary" id="submit" type="submit">Get my key · 키 조회</button>
+    </form>
+
+    <p class="msg" id="msg"></p>
+
+    <div class="result" id="result">
+      <h2>Your license key · 라이선스 키</h2>
+      <div class="keybox">
+        <code id="key"></code>
+        <button class="copy" id="copy" type="button">Copy</button>
+      </div>
+      <ol class="steps">
+        <li>Open the CookieMop options page (extension icon → gear).</li>
+        <li>Scroll to “CookieMop Pro” and paste the key.</li>
+        <li>Press Activate. 확장 옵션 페이지 → CookieMop Pro → 붙여넣고 활성화.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="foot">
+    Lost your key? Come back to this page any time and look it up again — you will always get the same key.
+    <div class="foot-ko">키를 잃어버려도 이 페이지에서 언제든 다시 조회할 수 있습니다. 항상 같은 키가 나옵니다.</div>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById('form');
+  const msg = document.getElementById('msg');
+  const result = document.getElementById('result');
+  const keyEl = document.getElementById('key');
+  const submit = document.getElementById('submit');
+  const copyBtn = document.getElementById('copy');
+
+  function showError(text) {
+    msg.textContent = text;
+    msg.className = 'msg error';
+    result.classList.remove('show');
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const orderNumber = document.getElementById('order').value.trim();
+    if (!email || !orderNumber) {
+      showError('Enter both your email and your order number. / 이메일과 주문번호를 모두 입력해주세요.');
+      return;
+    }
+
+    msg.className = 'msg';
+    submit.disabled = true;
+    submit.textContent = 'Checking… · 확인 중…';
+
+    try {
+      const response = await fetch('/api/license', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, orderNumber })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        showError(data.message || 'Something went wrong. Please try again. / 오류가 발생했습니다. 다시 시도해주세요.');
+        return;
+      }
+      keyEl.textContent = data.licenseKey;
+      result.classList.add('show');
+      msg.className = 'msg';
+    } catch {
+      showError('Could not reach the server. Check your connection and try again. / 서버에 연결할 수 없습니다. 연결 상태를 확인해주세요.');
+    } finally {
+      submit.disabled = false;
+      submit.textContent = 'Get my key · 키 조회';
+    }
+  });
+
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(keyEl.textContent);
+      copyBtn.textContent = 'Copied ✓';
+    } catch {
+      // Clipboard API needs a secure context and permission; fall back to
+      // selecting the text so the user can copy it by hand.
+      const range = document.createRange();
+      range.selectNodeContents(keyEl);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      copyBtn.textContent = 'Select & copy';
+    }
+    setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+  });
+</script>
+</body>
+</html>

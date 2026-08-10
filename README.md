@@ -54,12 +54,20 @@ CookieMop is a Manifest V3 successor to Cookie AutoDelete: when you close a tab,
 
 The core of CookieMop is free forever, and nothing that was free in v1.0 has moved behind a payment. Pro is additive: rule profiles, a per-cookie whitelist, and more to come. It costs $9.99 once — we have no servers, so we don't charge you monthly.
 
-**Pro does not add a single network request.** There is no license server to phone. Your key is a payload signed with an ECDSA P-256 key; the extension verifies that signature locally against a public key compiled into the build. Read it yourself:
+**Pro does not add a single network request.** There is no license server to phone, no activation call, and no usage reporting. Verify that claim yourself:
 
-- Verification: [`src/lib/license.js`](src/lib/license.js) — `verifyLicenseKey()` uses `crypto.subtle.verify`, nothing else
-- Issuing (server-side, never shipped in the extension): [`server/`](server/)
+| What | Where | What to look for |
+|---|---|---|
+| Verification | [`src/lib/license.js`](src/lib/license.js) | `verifyLicenseKey()` — one `crypto.subtle.verify` call against `PUBLIC_KEY_B64`, and nothing else |
+| Pro gating | [`src/lib/license.js`](src/lib/license.js) | `isPro()` re-runs that verification instead of trusting a stored flag, so editing storage by hand does not unlock anything |
+| Proof of no network | anywhere in [`src/`](src/) | `grep -rE "fetch\(\|XMLHttpRequest\|WebSocket\|sendBeacon" src/` returns nothing. [`tools/package.mjs`](tools/package.mjs) re-runs that check and refuses to build if it ever matches |
+| Issuing | [`server/`](server/) | Server-side only. Never included in the extension package |
 
-Because verification is offline, Pro keeps working if this project's payment infrastructure ever disappears, and it works with no internet connection at all. Settings export and import stay free permanently — your rules are yours, licensed or not.
+A license key is a payload — your email and order number — signed with ECDSA P-256. The extension holds only the public key, which can verify signatures but cannot create them.
+
+Signing is deterministic, so the same purchase always produces the same key. That means there is no database of customers, and if you lose your key you just look it up again and get the same one back.
+
+Because verification is offline, Pro keeps working with no internet connection, and it keeps working if this project's payment infrastructure ever disappears.
 
 ## Known limitations
 

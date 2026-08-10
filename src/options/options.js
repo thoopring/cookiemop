@@ -20,7 +20,7 @@ import {
   isPro,
   LicenseStatus
 } from '../lib/license.js';
-import { CHECKOUT_URL } from '../lib/config.js';
+import { CHECKOUT_URL, LICENSE_LOOKUP_URL } from '../lib/config.js';
 
 const $ = (id) => document.getElementById(id);
 const msg = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
@@ -391,6 +391,7 @@ async function renderPro() {
     );
   }
   $('pro-buy').href = CHECKOUT_URL;
+  $('license-lookup-link').href = LICENSE_LOOKUP_URL;
 }
 
 $('license-activate').addEventListener('click', async () => {

@@ -1,0 +1,10 @@
+{
+  "name": "cookiemop-license-server",
+  "version": "1.5.0",
+  "private": true,
+  "type": "module",
+  "description": "License lookup endpoint for CookieMop Pro. Never shipped inside the extension.",
+  "dependencies": {
+    "@noble/curves": "^2.3.0"
+  }
+}

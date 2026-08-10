@@ -22,7 +22,7 @@ const realPrivateKeyPem = hasSigningKey ? readFileSync(PRIVATE_KEY_PATH, 'utf8')
 const forgedKeyPem = generateKeyPairSync('ec', { namedCurve: 'prime256v1' })
   .privateKey.export({ type: 'pkcs8', format: 'pem' });
 
-const BUYER = { email: 'buyer@example.com', orderId: 'LS-1001' };
+const BUYER = { email: 'buyer@example.com', orderNumber: '1001' };
 
 let context, extensionId, page;
 
@@ -52,7 +52,7 @@ test('accepts a genuine key and exposes the buyer details', async () => {
   const result = await verifyInExtension(key);
   expect(result.status).toBe('valid');
   expect(result.payload.email).toBe(BUYER.email);
-  expect(result.payload.orderId).toBe(BUYER.orderId);
+  expect(result.payload.orderNumber).toBe(BUYER.orderNumber);
 });
 
 test('rejects a key forged with a different private key', async () => {
@@ -69,7 +69,7 @@ test('rejects a genuine key whose payload was edited', async () => {
 
   // Re-encode the payload with a different email, keeping the real signature.
   const tamperedPayload = Buffer.from(
-    JSON.stringify({ v: 1, e: 'attacker@example.com', o: BUYER.orderId, i: 1 })
+    JSON.stringify({ v: 1, e: 'attacker@example.com', o: BUYER.orderNumber })
   )
     .toString('base64')
     .replace(/\+/g, '-')
@@ -131,6 +131,7 @@ test('activate stores the license and isPro reports true; deactivate reverses it
   expect(activated.status).toBe('valid');
   expect(activated.isPro).toBe(true);
   expect(activated.stored.email).toBe(BUYER.email);
+  expect(activated.stored.orderNumber).toBe(BUYER.orderNumber);
 
   const after = await page.evaluate(async () => {
     const mod = await import('/src/lib/license.js');

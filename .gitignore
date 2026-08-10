@@ -12,3 +12,5 @@ dist/
 # License signing keys must never be committed
 *.pem
 cookiemop-secrets/
+
+server/node_modules/

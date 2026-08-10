@@ -1,42 +1,64 @@
-# CookieMop license issuer
+# CookieMop license lookup
 
 This directory is **not** part of the Chrome extension. It is never included
-in the store package (`dist/cookiemop-*.zip` is built from an explicit file
-list: `manifest.json`, `icons`, `src`, `_locales`, `LICENSE`).
+in the store package — `tools/package.mjs` builds from an explicit file list
+(`manifest.json`, `icons`, `src`, `_locales`, `LICENSE`) and refuses to run
+if a network primitive ever appears under `src/`.
 
-It exists so that buying Pro produces a signed license key by email, while
-the extension itself keeps making zero network requests.
+It exists so a buyer can get a signed license key, while the extension keeps
+making zero network requests.
 
 ```
 Lemon Squeezy checkout
-        │  order_created webhook
+        │  LS emails its own receipt (contains the order number)
+        │  LS redirects the buyer to  /license
         ▼
-api/license-webhook.js  ── verifies the webhook HMAC
-        │                  signs {email, orderId} with the private key
-        │                  emails the key to the buyer (Resend)
+   /license page  ──  buyer enters email + order number
+        │
         ▼
-   buyer's inbox
-        │  copy & paste
+POST /api/license  ──  verifies the order against the Lemon Squeezy API
+        │              signs {e, o, v} with the private key
+        │              returns the key (nothing is stored)
         ▼
-CookieMop options page ── verifies the signature locally, offline
+   buyer copies it
+        ▼
+CookieMop options page  ──  verifies the signature locally, offline
 ```
+
+## Why there is no database and no webhook
+
+Signing is deterministic: the same email and order number always produce
+byte-identical output. So the key does not need to be stored anywhere — it
+can be recomputed on demand. A buyer who loses their key returns to
+`/license` and gets the same key back, forever, at no support cost.
+
+That determinism comes from RFC 6979, via `@noble/curves`. Node's built-in
+`crypto.sign()` uses a random nonce and would produce a different (still
+valid) signature on every lookup. This is the only dependency in the
+project, it is server-side only, and the extension continues to verify with
+native WebCrypto and ship nothing.
 
 ## Deploy (Vercel)
 
-1. Create a new Vercel project from this repository, with **Root Directory**
-   set to `server`. Keep it separate from other projects.
+1. Create a Vercel project from this repository with **Root Directory** set
+   to `server`. Keep it separate from other projects.
 2. Set these environment variables (Settings → Environment Variables):
 
    | Variable | Value |
    |---|---|
-   | `LICENSE_PRIVATE_KEY` | Contents of `license-private-key.pem` (the whole PEM, including the BEGIN/END lines) |
-   | `LS_WEBHOOK_SECRET` | The signing secret from the Lemon Squeezy webhook screen |
-   | `RESEND_API_KEY` | A Resend API key |
-   | `LICENSE_FROM_EMAIL` | e.g. `CookieMop <keys@yourdomain.com>` (must be a verified Resend sender) |
+   | `LICENSE_PRIVATE_KEY` | Contents of `license-private-key.pem`, including the BEGIN/END lines |
+   | `LEMONSQUEEZY_API_KEY` | Lemon Squeezy → Settings → API |
+   | `LS_STORE_ID` | Your Lemon Squeezy store id |
+   | `LS_VARIANT_ID` | Variant id of the CookieMop Pro product |
+   | `ALLOW_TEST_MODE` | Set to `1` **only** while testing with a test-mode order. Remove it before real sales. |
 
-3. In Lemon Squeezy, add a webhook pointing at
-   `https://<your-deployment>/api/license-webhook`, subscribed to
-   **`order_created`** only.
+3. In the Lemon Squeezy product settings, set the post-purchase redirect to
+   `https://<your-deployment>/license`.
+4. Put that same URL, and the checkout URL, into `src/lib/config.js`.
+   `node tools/package.mjs` refuses to build the store package while either
+   is still a placeholder.
+
+No webhook is needed. Nothing subscribes to Lemon Squeezy events.
 
 ## Generating the signing keypair
 
@@ -51,12 +73,27 @@ It writes the private key **outside** this repository (default:
 public key. Paste that public key into `PUBLIC_KEY_B64` in
 `src/lib/license.js`, and the private key PEM into `LICENSE_PRIVATE_KEY`.
 
-Back the private key up offline. Losing it means existing customers keep
-working (their keys are already signed) but no new keys can be issued, and
-rotating the public key would invalidate every key already sold.
+Back the private key up in a password manager. Losing it means existing
+customers keep working — their keys are already signed and verify offline —
+but no new keys can be issued. Changing the public key would invalidate
+every key already sold.
 
-## Testing the round trip
+## Abuse controls
 
-`tests/license.spec.js` mints keys with `server/lib/sign-license.js` and
-verifies them inside a real extension page, so a signing change that would
-break verification fails the test suite rather than a customer's activation.
+A lookup requires both the email and the order number, so the endpoint
+cannot be used to enumerate customers from an email alone. On top of that,
+`lib/rate-limit.js` caps each IP at 10 lookups per minute. That cap is per
+warm serverless instance rather than global; making it global would require
+a datastore, which this design deliberately avoids.
+
+Every refusal returns the same message, so the endpoint does not reveal
+which orders or products exist.
+
+## Testing
+
+`tests/license-lookup.spec.js` drives the handler with a stubbed Lemon
+Squeezy API — no network, no real orders — and covers order verification,
+determinism, the generic-refusal behaviour and rate limiting.
+`tests/license.spec.js` then takes a key minted by `lib/sign-license.js` and
+verifies it inside a real extension page, so a signing change that would
+break activation fails the suite instead of a customer's purchase.

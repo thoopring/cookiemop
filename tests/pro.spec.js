@@ -22,7 +22,7 @@ const privateKeyPem = hasSigningKey ? readFileSync(PRIVATE_KEY_PATH, 'utf8') : n
 function proKey() {
   return signLicense({
     email: 'pro@example.com',
-    orderId: 'LS-2001',
+    orderNumber: '2001',
     privateKeyPem
   });
 }

@@ -87,6 +87,8 @@
   "proHaveKey": { "message": "이미 구매하셨나요? 라이선스 키를 붙여넣으세요" },
   "proKeyPlaceholder": { "message": "CM1.…" },
   "proActivate": { "message": "활성화" },
+  "proLookupLink": { "message": "키 조회하기" },
+  "proLookupNote": { "message": "— 영수증 메일의 이메일과 주문번호를 입력하세요. 항상 같은 키가 나오므로 키를 잃어버려도 괜찮습니다." },
   "proActivated": { "message": "Pro가 활성화됐습니다. 감사합니다." },
   "proErrorEmpty": { "message": "라이선스 키를 먼저 붙여넣어 주세요." },
   "proErrorInvalid": { "message": "유효한 키가 아닙니다. 메일에서 키 전체를 복사했는지 확인해 주세요." },

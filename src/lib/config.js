@@ -1,11 +1,19 @@
 // Build-time constants.
 //
-// CHECKOUT_URL is the Lemon Squeezy hosted checkout for CookieMop Pro. It is
-// opened in a new tab when the user clicks "Get Pro"; the extension itself
-// never requests it, so this remains a link, not a network call.
+// Both URLs are opened in a new tab when the user clicks them. The extension
+// never requests either one, so these stay links, not network calls.
 //
-// TODO(founder): replace with the real Lemon Squeezy checkout URL before
-// submitting v1.5. Until then the button points at the repo's Pro section.
-export const CHECKOUT_URL = 'https://github.com/thoopring/cookiemop#cookiemop-pro';
+// PLACEHOLDER — replace both before submitting v1.5:
+//   CHECKOUT_URL     the Lemon Squeezy hosted checkout for CookieMop Pro
+//   LICENSE_LOOKUP_URL  the deployed /license page (buyers look their key up
+//                       there; it is also the post-purchase redirect target)
+//
+// tools/package.mjs refuses to build a store package while either value
+// still matches PLACEHOLDER_PATTERN, so a placeholder cannot reach the store.
+export const CHECKOUT_URL = 'https://example.lemonsqueezy.com/buy/REPLACE-ME';
+export const LICENSE_LOOKUP_URL = 'https://REPLACE-ME.vercel.app/license';
+
+/** Any URL matching this is not a real, deployed endpoint. */
+export const PLACEHOLDER_PATTERN = /REPLACE-ME|example\.lemonsqueezy|github\.com\/thoopring\/cookiemop#/;
 
 export const PRO_PRICE_USD = '$9.99';

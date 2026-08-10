@@ -122,8 +122,7 @@ export async function verifyLicenseKey(rawKey) {
     status: LicenseStatus.VALID,
     payload: {
       email: String(payload.e),
-      orderId: String(payload.o),
-      issuedAt: Number(payload.i) || 0,
+      orderNumber: String(payload.o),
       version: Number(payload.v) || 1
     }
   };
@@ -151,8 +150,7 @@ export async function activateLicense(rawKey) {
     license: {
       key: normalizeKey(rawKey),
       email: result.payload.email,
-      orderId: result.payload.orderId,
-      issuedAt: result.payload.issuedAt,
+      orderNumber: result.payload.orderNumber,
       activatedAt: Date.now()
     }
   });
