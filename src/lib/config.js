@@ -11,7 +11,7 @@
 // tools/package.mjs refuses to build a store package while either value
 // still matches PLACEHOLDER_PATTERN, so a placeholder cannot reach the store.
 export const CHECKOUT_URL = 'https://example.lemonsqueezy.com/buy/REPLACE-ME';
-export const LICENSE_LOOKUP_URL = 'https://REPLACE-ME.vercel.app/license';
+export const LICENSE_LOOKUP_URL = 'https://cookiemop.vercel.app/license';
 
 /** Any URL matching this is not a real, deployed endpoint. */
 export const PLACEHOLDER_PATTERN = /REPLACE-ME|example\.lemonsqueezy|github\.com\/thoopring\/cookiemop#/;
