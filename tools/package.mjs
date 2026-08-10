@@ -28,7 +28,8 @@ const configPath = join(repoRoot, 'src', 'lib', 'config.js');
 const configSource = readFileSync(configPath, 'utf8');
 
 function readConstant(name) {
-  const match = configSource.match(new RegExp(`export const ${name} = '([^']*)'`));
+  // Tolerates the value sitting on the next line, so a long URL can wrap.
+  const match = configSource.match(new RegExp(`export const ${name}\\s*=\\s*'([^']*)'`));
   if (!match) fail(`could not find ${name} in src/lib/config.js`);
   return match[1];
 }
