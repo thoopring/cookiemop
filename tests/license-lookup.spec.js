@@ -10,6 +10,7 @@ import handler from '../server/api/license.js';
 import { verifyOrder, OrderProblem } from '../server/lib/lemonsqueezy.js';
 import { signLicense } from '../server/lib/sign-license.js';
 import { resetRateLimit, RATE_LIMIT } from '../server/lib/rate-limit.js';
+import { evaluateTestMode, testModeWarning, TestModeProblem } from '../server/lib/test-mode.js';
 
 const PRIVATE_KEY_PATH =
   process.env.COOKIEMOP_PRIVATE_KEY_PATH ||
@@ -212,10 +213,14 @@ test('two lookups of the same order return the same key through the handler', as
 
 // --- handler behaviour ---------------------------------------------------
 
-test('handler rejects non-POST', async () => {
-  const res = makeRes();
-  await handler(makeReq({ method: 'GET' }), res);
-  expect(res.statusCode).toBe(405);
+test('handler rejects methods other than GET and POST', async () => {
+  // GET is the test-mode status probe; POST is the lookup. Nothing else.
+  for (const method of ['PUT', 'DELETE', 'PATCH', 'HEAD']) {
+    const res = makeRes();
+    await handler(makeReq({ method }), res);
+    expect(res.statusCode, `${method} must be rejected`).toBe(405);
+    expect(res.headers.Allow).toBe('GET, POST');
+  }
 });
 
 test('handler requires both fields', async () => {
@@ -300,4 +305,108 @@ test('a rate-limited response tells the caller when to retry', async () => {
   }
   expect(res.statusCode).toBe(429);
   expect(Number(res.headers['Retry-After'])).toBeGreaterThan(0);
+});
+
+// --- ALLOW_TEST_MODE expiry ----------------------------------------------
+// The variable is a deadline, not a switch, so leaving it behind cannot keep
+// minting free keys forever.
+
+test('test mode is refused when the variable is unset', () => {
+  expect(evaluateTestMode(undefined)).toEqual({
+    allowed: false, expiresAt: null, problem: TestModeProblem.UNSET
+  });
+  expect(evaluateTestMode('').allowed).toBe(false);
+  expect(evaluateTestMode('   ').allowed).toBe(false);
+});
+
+test('test mode is allowed while the expiry date is still ahead', () => {
+  const state = evaluateTestMode('2026-08-25', new Date('2026-08-22T09:00:00Z'));
+  expect(state).toEqual({ allowed: true, expiresAt: '2026-08-25', problem: null });
+});
+
+test('test mode closes itself once the expiry date arrives', () => {
+  // Expiry is the start of that day, UTC — on the date itself it is shut.
+  const onTheDay = evaluateTestMode('2026-08-25', new Date('2026-08-25T00:00:00Z'));
+  expect(onTheDay).toEqual({
+    allowed: false, expiresAt: '2026-08-25', problem: TestModeProblem.EXPIRED
+  });
+
+  const later = evaluateTestMode('2026-08-25', new Date('2026-09-30T12:00:00Z'));
+  expect(later.allowed).toBe(false);
+  expect(later.problem).toBe(TestModeProblem.EXPIRED);
+});
+
+test('a malformed value is refused rather than treated as permission', () => {
+  for (const value of ['1', 'true', 'yes', '2026/08/25', '25-08-2026', '2026-8-5', 'tomorrow', '2026-13-01', '2026-02-30']) {
+    const state = evaluateTestMode(value, new Date('2026-08-22T09:00:00Z'));
+    expect(state.allowed, `"${value}" must not enable test mode`).toBe(false);
+    expect(state.problem).toBe(TestModeProblem.MALFORMED);
+  }
+});
+
+test('the old boolean value no longer enables test mode', async () => {
+  // Anyone upgrading from the previous format must not silently stay open.
+  process.env.ALLOW_TEST_MODE = '1';
+  globalThis.fetch = stubFetch(() => orderFixture({ test_mode: true }));
+  const res = makeRes();
+  await handler(makeReq({ body: { email: BUYER_EMAIL, orderNumber: ORDER_NUMBER } }), res);
+  expect(res.statusCode).toBe(404);
+  expect(res.body.licenseKey).toBeUndefined();
+});
+
+test('a malformed or expired value produces an operator warning', () => {
+  const malformed = evaluateTestMode('1');
+  expect(testModeWarning(malformed, '1')).toContain('not a YYYY-MM-DD date');
+
+  const expired = evaluateTestMode('2026-08-25', new Date('2026-09-01T00:00:00Z'));
+  expect(testModeWarning(expired, '2026-08-25')).toContain('expired on 2026-08-25');
+
+  // Unset is the normal production state and should stay quiet.
+  expect(testModeWarning(evaluateTestMode(undefined), undefined)).toBeNull();
+});
+
+test('a test-mode order mints a key only while the deadline holds', async () => {
+  test.skip(!hasSigningKey, 'signing key not available');
+  globalThis.fetch = stubFetch(() => orderFixture({ test_mode: true }));
+
+  // Far-future deadline: allowed.
+  process.env.ALLOW_TEST_MODE = '2099-01-01';
+  const open = makeRes();
+  await handler(makeReq({ body: { email: BUYER_EMAIL, orderNumber: ORDER_NUMBER } }), open);
+  expect(open.statusCode).toBe(200);
+  expect(open.body.licenseKey.startsWith('CM1.')).toBe(true);
+
+  // Past deadline: refused, with the same generic message as any other miss.
+  resetRateLimit();
+  process.env.ALLOW_TEST_MODE = '2020-01-01';
+  const shut = makeRes();
+  await handler(makeReq({ body: { email: BUYER_EMAIL, orderNumber: ORDER_NUMBER } }), shut);
+  expect(shut.statusCode).toBe(404);
+  expect(shut.body.licenseKey).toBeUndefined();
+});
+
+test('GET reports test-mode status for the banner, and hides an expired one', async () => {
+  process.env.ALLOW_TEST_MODE = '2099-01-01';
+  const active = makeRes();
+  await handler(makeReq({ method: 'GET' }), active);
+  expect(active.statusCode).toBe(200);
+  expect(active.body.testMode).toEqual({ active: true, expiresAt: '2099-01-01' });
+
+  process.env.ALLOW_TEST_MODE = '2020-01-01';
+  const expired = makeRes();
+  await handler(makeReq({ method: 'GET' }), expired);
+  expect(expired.body.testMode).toEqual({ active: false, expiresAt: null });
+
+  delete process.env.ALLOW_TEST_MODE;
+  const unset = makeRes();
+  await handler(makeReq({ method: 'GET' }), unset);
+  expect(unset.body.testMode).toEqual({ active: false, expiresAt: null });
+});
+
+test('GET never leaks anything beyond the test-mode flag', async () => {
+  process.env.ALLOW_TEST_MODE = '2099-01-01';
+  const res = makeRes();
+  await handler(makeReq({ method: 'GET' }), res);
+  expect(Object.keys(res.body)).toEqual(['testMode']);
+  expect(JSON.stringify(res.body)).not.toContain('BEGIN');
 });

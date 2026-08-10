@@ -14,11 +14,17 @@
 //   LEMONSQUEEZY_API_KEY   Lemon Squeezy API key
 //   LS_STORE_ID            Lemon Squeezy store id
 //   LS_VARIANT_ID          Variant id of the CookieMop Pro product
-//   ALLOW_TEST_MODE        Set to "1" only while testing the flow end to end
+//   ALLOW_TEST_MODE        Expiry date (YYYY-MM-DD) for accepting test-mode
+//                          orders. Unset in production. It expires by itself,
+//                          so forgetting to remove it is harmless.
+//
+// GET on this route returns the current test-mode status, which the /license
+// page uses to show a warning banner while test orders are being accepted.
 
 import { signLicense } from '../lib/sign-license.js';
 import { verifyOrder, OrderProblem } from '../lib/lemonsqueezy.js';
 import { checkRateLimit, pruneRateLimit } from '../lib/rate-limit.js';
+import { evaluateTestMode, testModeWarning } from '../lib/test-mode.js';
 
 const REQUIRED_ENV = ['LICENSE_PRIVATE_KEY', 'LEMONSQUEEZY_API_KEY', 'LS_STORE_ID', 'LS_VARIANT_ID'];
 
@@ -46,8 +52,20 @@ async function readJsonBody(req) {
 }
 
 export default async function handler(req, res) {
+  const testMode = evaluateTestMode(process.env.ALLOW_TEST_MODE);
+  const warning = testModeWarning(testMode, process.env.ALLOW_TEST_MODE);
+  if (warning) console.warn(warning);
+
+  // GET reports whether test orders are currently being accepted. The
+  // /license page reads it to decide whether to show its warning banner.
+  if (req.method === 'GET') {
+    return res.status(200).json({
+      testMode: { active: testMode.allowed, expiresAt: testMode.allowed ? testMode.expiresAt : null }
+    });
+  }
+
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
+    res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'method not allowed' });
   }
 
@@ -87,7 +105,7 @@ export default async function handler(req, res) {
       apiKey: process.env.LEMONSQUEEZY_API_KEY,
       storeId: process.env.LS_STORE_ID,
       variantId: process.env.LS_VARIANT_ID,
-      allowTestMode: process.env.ALLOW_TEST_MODE === '1'
+      allowTestMode: testMode.allowed
     });
   } catch (error) {
     console.error('order lookup failed:', error.message);

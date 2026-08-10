@@ -50,7 +50,7 @@ native WebCrypto and ship nothing.
    | `LEMONSQUEEZY_API_KEY` | Lemon Squeezy → Settings → API |
    | `LS_STORE_ID` | Your Lemon Squeezy store id |
    | `LS_VARIANT_ID` | Variant id of the CookieMop Pro product |
-   | `ALLOW_TEST_MODE` | Set to `1` **only** while testing with a test-mode order. Remove it before real sales. |
+   | `ALLOW_TEST_MODE` | **A date, not a switch**: `YYYY-MM-DD`. Test-mode orders are accepted until the start of that day (UTC), then refused automatically. Leave it unset in production. |
 
 3. In the Lemon Squeezy product settings, set the post-purchase redirect to
    `https://<your-deployment>/license`.
@@ -88,6 +88,27 @@ a datastore, which this design deliberately avoids.
 
 Every refusal returns the same message, so the endpoint does not reveal
 which orders or products exist.
+
+## Test mode expires by itself
+
+Test-mode orders would otherwise be a way to mint free keys, and the one
+moment you need them — the end-to-end check after deploying — is exactly
+when you are least likely to remember to switch them off again. So the
+permission is a deadline rather than a flag:
+
+```
+ALLOW_TEST_MODE=2026-08-25   test orders work until 2026-08-25 (UTC), then stop
+(unset)                      test orders are refused
+```
+
+Anything that is not a real `YYYY-MM-DD` date — including the old `1` — is
+refused, and logs a warning. An expired value is refused and logs a note
+that it can now be deleted. Forgetting to remove the variable is harmless.
+
+While test mode is live, the `/license` page shows a red banner reading
+`TEST MODE ACTIVE — expires <date>`, so the state is visible on the site
+itself rather than only in the dashboard. `GET /api/license` returns that
+status (and nothing else) for the banner to read.
 
 ## Testing
 

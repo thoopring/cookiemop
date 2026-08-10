@@ -38,6 +38,11 @@
   .foot{margin-top:20px;font-size:13px;color:var(--soft);background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
   .foot-ko{color:var(--faint);font-size:12.5px;margin-top:2px}
   a{color:var(--emerald)}
+  /* Deliberately loud: if this is ever visible in production, it needs to be
+     impossible to scroll past. */
+  .testbanner{display:none;background:#dc2626;color:#fff;border-radius:12px;padding:14px 18px;margin-bottom:20px;font-size:14.5px;font-weight:700;line-height:1.5}
+  .testbanner.show{display:block}
+  .testbanner span{display:block;font-weight:400;font-size:13px;margin-top:4px;opacity:.92}
 </style>
 </head>
 <body>
@@ -46,6 +51,8 @@
     <svg width="32" height="32" viewBox="0 0 64 64" fill="none"><rect x="2" y="2" width="60" height="60" rx="16" fill="#10b981"/><circle cx="30" cy="32" r="17" fill="#fff"/><circle cx="24.5" cy="27" r="2.6" fill="#10b981"/><circle cx="34" cy="24.5" r="2.2" fill="#10b981"/><circle cx="27" cy="37" r="2.4" fill="#10b981"/><circle cx="35.5" cy="33.5" r="2" fill="#10b981"/><path d="M41 39 L52 28" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M46.5 41.5 L54 34" stroke="#fff" stroke-width="3.4" stroke-linecap="round" opacity=".7"/></svg>
     <b>CookieMop</b>
   </div>
+
+  <div class="testbanner" id="testbanner" role="alert"></div>
 
   <div class="card">
     <h1>Get your license key</h1>
@@ -85,6 +92,26 @@
 </div>
 
 <script>
+  // Show a warning while the server is still accepting test-mode orders.
+  // Seeing this on the live site means real money is not required to get a
+  // key, so it is drawn to be unmissable.
+  (async () => {
+    try {
+      const response = await fetch('/api/license', { method: 'GET' });
+      if (!response.ok) return;
+      const { testMode } = await response.json();
+      if (!testMode || !testMode.active) return;
+      const banner = document.getElementById('testbanner');
+      banner.textContent = `TEST MODE ACTIVE — expires ${testMode.expiresAt}. Remove ALLOW_TEST_MODE before real sales.`;
+      const note = document.createElement('span');
+      note.textContent = '테스트 모드가 켜져 있습니다. 실판매 전에 ALLOW_TEST_MODE 환경변수를 제거하세요.';
+      banner.appendChild(note);
+      banner.classList.add('show');
+    } catch {
+      // A status check that fails must never block the lookup form.
+    }
+  })();
+
   const form = document.getElementById('form');
   const msg = document.getElementById('msg');
   const result = document.getElementById('result');
