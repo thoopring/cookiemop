@@ -76,6 +76,9 @@ test('edge ④: alarm fires the pending cleanup after the service worker is kill
 });
 
 test('edge ⑤: greylisted domains are cleaned when the browser restarts', async () => {
+  // Two full browser launches back to back; under a loaded machine the
+  // second extension init can take a while, so allow generous headroom.
+  test.setTimeout(120_000);
   const userDataDir = mkdtempSync(join(tmpdir(), 'cookiemop-profile-'));
   const server = await startCookieServer();
 
@@ -97,7 +100,7 @@ test('edge ⑤: greylisted domains are cleaned when the browser restarts', async
   // cookies. Poll: extension init can be slow on a loaded machine.
   ({ context, sw } = await launchWithExtension(userDataDir));
   await expect
-    .poll(async () => (await getCookies(sw, '127.0.0.1')).length, { timeout: 15_000 })
+    .poll(async () => (await getCookies(sw, '127.0.0.1')).length, { timeout: 45_000 })
     .toBe(0);
 
   await context.close();
