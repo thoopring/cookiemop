@@ -1,6 +1,9 @@
 // POST /api/license — the only endpoint CookieMop has.
 //
-// Body: { email, orderNumber }
+// Body: { email, orderNumber } or { email, orderId }
+// orderNumber is what a buyer reads off their receipt; orderId is what the
+// Lemon Squeezy checkout hands back through its link variables on the
+// post-purchase redirect. Either resolves to the same license key.
 // Verifies the purchase against the Lemon Squeezy API, then signs and
 // returns a license key. Nothing is stored: signing is deterministic, so
 // the same purchase always yields the same key and a buyer can look it up
@@ -90,7 +93,8 @@ export default async function handler(req, res) {
 
   const email = String(body.email || '').trim();
   const orderNumber = String(body.orderNumber || '').trim();
-  if (!email || !orderNumber) {
+  const orderId = String(body.orderId || '').trim();
+  if (!email || (!orderNumber && !orderId)) {
     return res.status(400).json({
       error: 'missing fields',
       message: 'Enter both your email and your order number. / 이메일과 주문번호를 모두 입력해주세요.'
@@ -102,6 +106,7 @@ export default async function handler(req, res) {
     order = await verifyOrder({
       email,
       orderNumber,
+      orderId,
       apiKey: process.env.LEMONSQUEEZY_API_KEY,
       storeId: process.env.LS_STORE_ID,
       variantId: process.env.LS_VARIANT_ID,
@@ -136,5 +141,11 @@ export default async function handler(req, res) {
 
   // Never log the key itself.
   console.log('license issued for order', order.orderNumber);
-  return res.status(200).json({ licenseKey, email: order.email });
+  // orderNumber goes back so the page can fill in the field after an
+  // id-based lookup, leaving the buyer with something they can reuse.
+  return res.status(200).json({
+    licenseKey,
+    email: order.email,
+    orderNumber: order.orderNumber
+  });
 }

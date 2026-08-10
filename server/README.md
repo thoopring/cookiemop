@@ -11,10 +11,10 @@ making zero network requests.
 ```
 Lemon Squeezy checkout
         │  LS emails its own receipt (contains the order number)
-        │  LS redirects the buyer to  /license
+        │  LS redirects to /license?email=…&order_id=…  (link variables)
         ▼
-   /license page  ──  buyer enters email + order number
-        │
+   /license page  ──  prefills and looks up automatically;
+        │             falls back to a manual form if that fails
         ▼
 POST /api/license  ──  verifies the order against the Lemon Squeezy API
         │              signs {e, o, v} with the private key
@@ -24,6 +24,23 @@ POST /api/license  ──  verifies the order against the Lemon Squeezy API
         ▼
 CookieMop options page  ──  verifies the signature locally, offline
 ```
+
+## Two ways in, one key
+
+The redirect hands back Lemon Squeezy's internal **order id**, while the
+receipt shows the **order number**. `POST /api/license` accepts either
+(`{email, orderId}` or `{email, orderNumber}`) and the email must match on
+both routes.
+
+Whichever route is used, the key is signed over the `order_number` that
+Lemon Squeezy holds — never over the caller's input. So a buyer who arrives
+via the redirect and the same buyer typing their receipt number later get
+byte-identical keys. Losing that normalization would silently hand one
+customer two different keys.
+
+If the link variables fail to substitute, the page ignores the raw
+`===[order_id]===` text and behaves like a plain form. A broken redirect
+must never block a sale.
 
 ## Why there is no database and no webhook
 

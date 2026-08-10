@@ -410,3 +410,123 @@ test('GET never leaks anything beyond the test-mode flag', async () => {
   expect(Object.keys(res.body)).toEqual(['testMode']);
   expect(JSON.stringify(res.body)).not.toContain('BEGIN');
 });
+
+// --- orderId lookups (Lemon Squeezy redirect link variables) --------------
+// LS hands back its internal order id, not the order number the buyer sees.
+// Both must resolve to one key, or a buyer who used the redirect and a buyer
+// who typed their receipt number would end up with different keys.
+
+const ORDER_ID = 'ls-internal-77';
+
+/**
+ * Serve one order from both the by-id and by-number endpoints, so a test can
+ * hit either route. Only the matching id / order number resolves; anything
+ * else misses, the way the real API behaves.
+ */
+function stubBothRoutes(overrides = {}) {
+  return async (url) => {
+    const href = String(url);
+    const attributes = orderFixture(overrides).data[0].attributes;
+
+    if (href.includes('/orders/')) {
+      const requestedId = decodeURIComponent(href.split('/orders/')[1].split('?')[0]);
+      if (requestedId !== ORDER_ID) {
+        return { ok: false, status: 404, json: async () => ({}) };
+      }
+      return { ok: true, status: 200, json: async () => ({ data: { id: ORDER_ID, attributes } }) };
+    }
+
+    const requestedNumber = new URL(href).searchParams.get('filter[order_number]');
+    if (requestedNumber !== ORDER_NUMBER) {
+      return { ok: true, status: 200, json: async () => ({ data: [] }) };
+    }
+    return { ok: true, status: 200, json: async () => ({ data: [{ id: ORDER_ID, attributes }] }) };
+  };
+}
+
+test('an order id and an order number for the same order yield the SAME key', async () => {
+  test.skip(!hasSigningKey, 'signing key not available');
+  globalThis.fetch = stubBothRoutes();
+
+  const call = async (body) => {
+    resetRateLimit();
+    const res = makeRes();
+    await handler(makeReq({ body }), res);
+    return res;
+  };
+
+  const byNumber = await call({ email: BUYER_EMAIL, orderNumber: ORDER_NUMBER });
+  const byId = await call({ email: BUYER_EMAIL, orderId: ORDER_ID });
+
+  expect(byNumber.statusCode).toBe(200);
+  expect(byId.statusCode).toBe(200);
+  // The whole point of normalizing on attributes.order_number.
+  expect(byId.body.licenseKey).toBe(byNumber.body.licenseKey);
+  // And the id route reports the number back, so the page can show it.
+  expect(byId.body.orderNumber).toBe(ORDER_NUMBER);
+});
+
+test('an order id lookup still requires the matching email', async () => {
+  globalThis.fetch = stubBothRoutes();
+  const result = await verifyOrder({
+    email: 'someone-else@example.com',
+    orderId: ORDER_ID,
+    apiKey: 'k', storeId: STORE_ID, variantId: VARIANT_ID,
+    fetchImpl: stubBothRoutes()
+  });
+  expect(result).toEqual({ ok: false, problem: OrderProblem.EMAIL_MISMATCH });
+});
+
+test('an unknown order id is a miss, not an outage', async () => {
+  const result = await verifyOrder({
+    email: BUYER_EMAIL,
+    orderId: 'does-not-exist',
+    apiKey: 'k', storeId: STORE_ID, variantId: VARIANT_ID,
+    fetchImpl: async () => ({ ok: false, status: 404, json: async () => ({}) })
+  });
+  expect(result).toEqual({ ok: false, problem: OrderProblem.NOT_FOUND });
+});
+
+test('an order id route applies every other check too', async () => {
+  const byId = (overrides, extra = {}) =>
+    verifyOrder({
+      email: BUYER_EMAIL, orderId: ORDER_ID,
+      apiKey: 'k', storeId: STORE_ID, variantId: VARIANT_ID,
+      fetchImpl: stubBothRoutes(overrides),
+      ...extra
+    });
+
+  expect((await byId({ status: 'pending' })).problem).toBe(OrderProblem.NOT_PAID);
+  expect((await byId({ store_id: 999 })).problem).toBe(OrderProblem.WRONG_STORE);
+  expect((await byId({ first_order_item: { variant_id: 1 } })).problem).toBe(OrderProblem.WRONG_PRODUCT);
+  expect((await byId({ test_mode: true })).problem).toBe(OrderProblem.TEST_MODE);
+  expect((await byId({ test_mode: true }, { allowTestMode: true })).ok).toBe(true);
+});
+
+test('an id-route refusal is worded exactly like every other refusal', async () => {
+  const messages = new Set();
+  const cases = [
+    { body: { email: BUYER_EMAIL, orderId: 'does-not-exist' },
+      stub: async () => ({ ok: false, status: 404, json: async () => ({}) }) },
+    { body: { email: 'wrong@example.com', orderId: ORDER_ID }, stub: stubBothRoutes() },
+    { body: { email: BUYER_EMAIL, orderId: ORDER_ID }, stub: stubBothRoutes({ status: 'pending' }) },
+    { body: { email: BUYER_EMAIL, orderNumber: '999999' }, stub: stubBothRoutes() }
+  ];
+  for (const { body, stub } of cases) {
+    resetRateLimit();
+    globalThis.fetch = stub;
+    const res = makeRes();
+    await handler(makeReq({ body }), res);
+    expect(res.body.licenseKey).toBeUndefined();
+    messages.add(res.body.message);
+  }
+  expect(messages.size).toBe(1);
+});
+
+test('email alone is still not enough', async () => {
+  globalThis.fetch = stubBothRoutes();
+  const res = makeRes();
+  await handler(makeReq({ body: { email: BUYER_EMAIL } }), res);
+  expect(res.statusCode).toBe(400);
+  expect(res.body.licenseKey).toBeUndefined();
+});

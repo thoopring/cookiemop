@@ -118,6 +118,24 @@
   const keyEl = document.getElementById('key');
   const submit = document.getElementById('submit');
   const copyBtn = document.getElementById('copy');
+  const emailEl = document.getElementById('email');
+  const orderEl = document.getElementById('order');
+
+  // Lemon Squeezy substitutes its link variables into the post-purchase
+  // redirect, so most buyers arrive with everything already filled in. If
+  // the substitution did not happen, the values are simply absent and the
+  // page stays an ordinary form — a broken variable must never block a sale.
+  const params = new URLSearchParams(location.search);
+  const prefill = {
+    email: (params.get('email') || '').trim(),
+    orderNumber: (params.get('order_number') || '').trim(),
+    // Only a plain id is useful; an unsubstituted "===[order_id]===" is not.
+    orderId: (params.get('order_id') || '').trim()
+  };
+  const usable = (value) => value && !value.includes('===') && !value.includes('[');
+
+  if (usable(prefill.email)) emailEl.value = prefill.email;
+  if (usable(prefill.orderNumber)) orderEl.value = prefill.orderNumber;
 
   function showError(text) {
     msg.textContent = text;
@@ -125,13 +143,12 @@
     result.classList.remove('show');
   }
 
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const email = document.getElementById('email').value.trim();
-    const orderNumber = document.getElementById('order').value.trim();
-    if (!email || !orderNumber) {
-      showError('Enter both your email and your order number. / 이메일과 주문번호를 모두 입력해주세요.');
-      return;
+  async function lookup({ email, orderNumber, orderId, silent = false }) {
+    if (!email || (!orderNumber && !orderId)) {
+      if (!silent) {
+        showError('Enter both your email and your order number. / 이메일과 주문번호를 모두 입력해주세요.');
+      }
+      return false;
     }
 
     msg.className = 'msg';
@@ -142,23 +159,53 @@
       const response = await fetch('/api/license', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, orderNumber })
+        body: JSON.stringify({ email, orderNumber, orderId })
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        showError(data.message || 'Something went wrong. Please try again. / 오류가 발생했습니다. 다시 시도해주세요.');
-        return;
+        // An automatic attempt that fails says nothing and leaves the buyer
+        // with the normal form, so a bad redirect looks like a plain visit.
+        if (!silent) {
+          showError(data.message || 'Something went wrong. Please try again. / 오류가 발생했습니다. 다시 시도해주세요.');
+        }
+        return false;
       }
       keyEl.textContent = data.licenseKey;
       result.classList.add('show');
       msg.className = 'msg';
+      // After an id lookup the order field is still blank; fill it in so the
+      // buyer can repeat the lookup later without digging out the redirect.
+      if (data.orderNumber) orderEl.value = data.orderNumber;
+      if (data.email) emailEl.value = data.email;
+      return true;
     } catch {
-      showError('Could not reach the server. Check your connection and try again. / 서버에 연결할 수 없습니다. 연결 상태를 확인해주세요.');
+      if (!silent) {
+        showError('Could not reach the server. Check your connection and try again. / 서버에 연결할 수 없습니다. 연결 상태를 확인해주세요.');
+      }
+      return false;
     } finally {
       submit.disabled = false;
       submit.textContent = 'Get my key · 키 조회';
     }
+  }
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    lookup({
+      email: emailEl.value.trim(),
+      orderNumber: orderEl.value.trim()
+    });
   });
+
+  // One automatic attempt on arrival, only when the redirect carried enough.
+  if (usable(prefill.email) && (usable(prefill.orderId) || usable(prefill.orderNumber))) {
+    lookup({
+      email: prefill.email,
+      orderNumber: usable(prefill.orderNumber) ? prefill.orderNumber : '',
+      orderId: usable(prefill.orderId) ? prefill.orderId : '',
+      silent: true
+    });
+  }
 
   copyBtn.addEventListener('click', async () => {
     try {
