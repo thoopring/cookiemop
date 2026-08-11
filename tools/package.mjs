@@ -46,6 +46,20 @@ const urls = {
   LICENSE_LOOKUP_URL: readConstant('LICENSE_LOOKUP_URL')
 };
 
+// The product created while the Lemon Squeezy store was in test mode has
+// this buy-link UUID. The live product gets a NEW UUID, so a package built
+// with this one would send real buyers to a checkout that cannot take
+// money. Blocked the same way as a placeholder.
+const TEST_MODE_CHECKOUT_UUID = '24524b91-03b3-4aab-89c2-4dda2ef0d11e';
+if (urls.CHECKOUT_URL.includes(TEST_MODE_CHECKOUT_UUID)) {
+  fail(
+    'CHECKOUT_URL still points at the TEST-MODE Lemon Squeezy product.',
+    `  ${urls.CHECKOUT_URL}\n\n` +
+      'Copy the product to live mode in Lemon Squeezy, then paste the live\n' +
+      "product's checkout URL into src/lib/config.js. See docs/GO_LIVE.md."
+  );
+}
+
 const stillPlaceholder = Object.entries(urls).filter(([, value]) => placeholder.test(value));
 if (stillPlaceholder.length) {
   fail(
