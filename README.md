@@ -84,7 +84,3 @@ Full privacy policy: https://thoopring.github.io/cookiemop/privacy.html
 ## License
 
 [MIT](LICENSE)
-
----
-
-Built by <a href="https://trafficpumplab.com">DANU Technologies</a>.
