@@ -26,6 +26,7 @@
   .primary:disabled{opacity:.6;cursor:default}
   .msg{font-size:14px;margin-top:16px;padding:12px 14px;border-radius:12px;display:none}
   .msg.error{display:block;background:#fef2f2;color:#b91c1c}
+  .msg.info{display:block;background:#e8faf3;color:#0e6e50;font-weight:600}
   .result{display:none;margin-top:22px;padding-top:22px;border-top:1px solid var(--line)}
   .result.show{display:block}
   .result h2{font-size:14px;font-weight:700;margin-bottom:8px}
@@ -126,16 +127,28 @@
   // the substitution did not happen, the values are simply absent and the
   // page stays an ordinary form — a broken variable must never block a sale.
   const params = new URLSearchParams(location.search);
-  const prefill = {
-    email: (params.get('email') || '').trim(),
-    orderNumber: (params.get('order_number') || '').trim(),
-    // Only a plain id is useful; an unsubstituted "===[order_id]===" is not.
-    orderId: (params.get('order_id') || '').trim()
+  const pick = (...names) => {
+    for (const name of names) {
+      const value = (params.get(name) || '').trim();
+      if (value) return value;
+    }
+    return '';
   };
+  const prefill = {
+    email: pick('email', 'customer_email'),
+    orderNumber: pick('order_number'),
+    orderId: pick('order_id', 'order')
+  };
+  // Only plain values are useful; an unsubstituted "===[order_id]===" is not.
   const usable = (value) => value && !value.includes('===') && !value.includes('[');
 
   if (usable(prefill.email)) emailEl.value = prefill.email;
   if (usable(prefill.orderNumber)) orderEl.value = prefill.orderNumber;
+
+  // The redirect may carry the order but not the email (or vice versa —
+  // link-variable substitution is outside our control). Whatever DID arrive
+  // is kept, so the buyer only has to supply the missing half.
+  const carriedOrderId = usable(prefill.orderId) ? prefill.orderId : '';
 
   function showError(text) {
     msg.textContent = text;
@@ -191,20 +204,30 @@
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+    const typedOrder = orderEl.value.trim();
     lookup({
       email: emailEl.value.trim(),
-      orderNumber: orderEl.value.trim()
+      orderNumber: typedOrder,
+      // A typed order number wins; the carried id fills in only when the
+      // buyer left that field empty.
+      orderId: typedOrder ? '' : carriedOrderId
     });
   });
 
-  // One automatic attempt on arrival, only when the redirect carried enough.
-  if (usable(prefill.email) && (usable(prefill.orderId) || usable(prefill.orderNumber))) {
+  if (usable(prefill.email) && (carriedOrderId || usable(prefill.orderNumber))) {
+    // The redirect carried everything — look the key up with no typing.
     lookup({
       email: prefill.email,
       orderNumber: usable(prefill.orderNumber) ? prefill.orderNumber : '',
-      orderId: usable(prefill.orderId) ? prefill.orderId : '',
+      orderId: carriedOrderId,
       silent: true
     });
+  } else if (carriedOrderId || usable(prefill.orderNumber)) {
+    // Order arrived but the email did not: one field left to fill, and the
+    // buyer knows their own email — no digging through receipts.
+    msg.textContent = 'Almost there — enter the email you paid with. / 결제에 사용한 이메일만 입력하면 키가 표시됩니다.';
+    msg.className = 'msg info';
+    emailEl.focus();
   }
 
   copyBtn.addEventListener('click', async () => {

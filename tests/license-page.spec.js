@@ -223,3 +223,55 @@ test('email alone in the redirect does not trigger a lookup', async () => {
   await expect(page.locator('#result')).toBeHidden();
   expect(server.posts).toHaveLength(0);
 });
+
+// --- partial substitution (only some link variables resolved) -------------
+
+test('order-only redirect leaves a one-field flow: type your email, get the key', async () => {
+  server = await startPageServer(OFF, (body) => ({
+    status: 200,
+    body: { licenseKey: KEY, email: body.email, orderNumber: '1042' }
+  }));
+  const page = await context.newPage();
+  // Email variable failed to substitute; order id came through.
+  await page.goto(`${server.url}?email====[email]===&order_id=ls-internal-77`);
+
+  // No auto-attempt without an email, but the buyer is told what remains.
+  await expect(page.locator('#msg')).toBeVisible();
+  await expect(page.locator('#msg')).toHaveClass(/info/);
+  await expect(page.locator('#result')).toBeHidden();
+  expect(server.posts).toHaveLength(0);
+
+  await page.locator('#email').fill('buyer@example.com');
+  await page.locator('#submit').click();
+  await expect(page.locator('#key')).toHaveText(KEY);
+  // The carried order id was used even though the order field stayed empty.
+  expect(server.posts[0]).toMatchObject({ email: 'buyer@example.com', orderId: 'ls-internal-77' });
+});
+
+test('a typed order number beats the carried order id', async () => {
+  server = await startPageServer(OFF, () => ({
+    status: 200,
+    body: { licenseKey: KEY, email: 'buyer@example.com', orderNumber: '9999' }
+  }));
+  const page = await context.newPage();
+  await page.goto(`${server.url}?order_id=stale-id`);
+
+  await page.locator('#email').fill('buyer@example.com');
+  await page.locator('#order').fill('9999');
+  await page.locator('#submit').click();
+  await expect(page.locator('#key')).toHaveText(KEY);
+  expect(server.posts[0].orderNumber).toBe('9999');
+  expect(server.posts[0].orderId).toBeFalsy();
+});
+
+test('customer_email is accepted as an email parameter', async () => {
+  server = await startPageServer(OFF, (body) => ({
+    status: 200,
+    body: { licenseKey: KEY, email: body.email, orderNumber: '1042' }
+  }));
+  const page = await context.newPage();
+  await page.goto(`${server.url}?customer_email=buyer%40example.com&order_id=ls-internal-77`);
+
+  await expect(page.locator('#key')).toHaveText(KEY);
+  expect(server.posts[0]).toMatchObject({ email: 'buyer@example.com', orderId: 'ls-internal-77' });
+});
