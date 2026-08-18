@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cookie AutoDelete alternative for Manifest V3 — migrate to CookieMop in two minutes</title>
+<meta name="description" content="Cookie AutoDelete stopped working when Chrome removed Manifest V2. CookieMop does the same job under current rules, and imports your old whitelist in one click.">
+<link rel="canonical" href="https://thoopring.github.io/cookiemop/cookie-autodelete-alternative.html">
+<style>
+  :root{--ink:#22252b;--soft:#6b7280;--faint:#9ca3af;--emerald:#10b981;--line:#eef0f2;--bg:#f6f8f9}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:var(--ink);background:#fff;-webkit-font-smoothing:antialiased;line-height:1.65}
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px}
+  header{padding:26px 0;display:flex;align-items:center;gap:11px}
+  header b{font-size:19px;letter-spacing:-.02em}
+  header a{color:inherit;text-decoration:none;display:flex;align-items:center;gap:11px}
+  h1{font-size:34px;line-height:1.2;letter-spacing:-.025em;margin:26px 0 14px}
+  .lede{font-size:17.5px;color:var(--soft);margin-bottom:24px}
+  h2{font-size:22px;letter-spacing:-.015em;margin:36px 0 12px}
+  p{color:#3a414c;margin-bottom:12px}
+  .btn{display:inline-block;padding:12px 22px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;background:var(--emerald);color:#fff}
+  .btn:hover{background:#0ea371}
+  .steps{counter-reset:s;margin:6px 0 8px}
+  .step{display:flex;gap:14px;padding:10px 0}
+  .step .n{flex:none;width:26px;height:26px;border-radius:50%;background:#d1fae5;color:#059669;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;margin-top:2px}
+  .step h3{font-size:15.5px;margin-bottom:3px}
+  .step p{font-size:14.5px;color:var(--soft);margin:0}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14.5px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);color:#3a414c;vertical-align:top}
+  th{color:#8a919c;font-size:12.5px;letter-spacing:.06em}
+  td:first-child{font-weight:600}
+  .yes{color:#059669;font-weight:700}
+  .no{color:var(--faint)}
+  .note{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;font-size:14px;color:#3a414c;margin:16px 0}
+  a{color:var(--emerald)}
+  footer{padding:34px 0 60px;font-size:13.5px;color:var(--faint);border-top:1px solid var(--line);margin-top:44px}
+  footer a{margin-right:15px;text-decoration:none}
+  code{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <a href="./index.html">
+      <svg width="34" height="34" viewBox="0 0 64 64" fill="none"><rect x="2" y="2" width="60" height="60" rx="16" fill="#10b981"/><circle cx="30" cy="32" r="17" fill="#fff"/><circle cx="24.5" cy="27" r="2.6" fill="#10b981"/><circle cx="34" cy="24.5" r="2.2" fill="#10b981"/><circle cx="27" cy="37" r="2.4" fill="#10b981"/><circle cx="35.5" cy="33.5" r="2" fill="#10b981"/><path d="M41 39 L52 28" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M46.5 41.5 L54 34" stroke="#fff" stroke-width="3.4" stroke-linecap="round" opacity=".7"/></svg>
+      <b>CookieMop</b>
+    </a>
+  </header>
+
+  <h1>Cookie AutoDelete is gone. Here is how to replace it in two minutes.</h1>
+  <p class="lede">Chrome finished removing Manifest V2 extensions in August 2026, and Cookie AutoDelete went with them. CookieMop does the same job — delete a site's cookies when its last tab closes, keep the sites you whitelist — rebuilt from scratch for Manifest V3, open source, with a one-click import for your old whitelist.</p>
+
+  <p><a class="btn" href="https://chromewebstore.google.com/detail/nbehnialaodjcffgjkckbnocggbdmdel">Install CookieMop — free</a></p>
+
+  <h2>Migrate your whitelist</h2>
+  <p>If you still have Cookie AutoDelete installed (even disabled), your rules can come across:</p>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><div><h3>Export from Cookie AutoDelete</h3><p>Open its settings → Expression Options → <b>Export expressions to JSON</b>. If the extension is already gone, skip to step 3 — rebuilding a whitelist takes a minute in the popup as you browse.</p></div></div>
+    <div class="step"><div class="n">2</div><div><h3>Import into CookieMop</h3><p>CookieMop options → <b>Import from Cookie AutoDelete</b> → choose the JSON file. WHITE entries become whitelist, GREY become greylist. Wildcard prefixes like <code>*.example.com</code> are normalized automatically.</p></div></div>
+    <div class="step"><div class="n">3</div><div><h3>Check the delay and scope</h3><p>Default: 15 seconds after the last tab closes, cookies only. Both are adjustable in options — the delay from 0 to 60 seconds, the scope up to localStorage, IndexedDB, CacheStorage and Service Workers.</p></div></div>
+  </div>
+
+  <h2>What carries over, honestly</h2>
+  <table>
+    <tr><th>COOKIE AUTODELETE</th><th>COOKIEMOP</th></tr>
+    <tr><td>Auto-clean on tab close</td><td class="yes">Yes — same model: cleaned only when no other tab uses the site</td></tr>
+    <tr><td>Whitelist / greylist</td><td class="yes">Yes, unlimited, free</td></tr>
+    <tr><td>Badge cookie counter</td><td class="yes">Yes</td></tr>
+    <tr><td>localStorage &amp; site-data cleaning</td><td class="yes">Yes — optional scopes up to IndexedDB, CacheStorage, Service Workers</td></tr>
+    <tr><td>Whitelist import</td><td class="yes">Yes — reads Cookie AutoDelete's own JSON export</td></tr>
+    <tr><td>Wildcard expressions (<code>*.example.com</code>)</td><td class="no">Not yet — subdomains of a listed domain are covered automatically; pattern rules are on the roadmap</td></tr>
+    <tr><td>Per-cookie exceptions</td><td class="yes">Yes — keep one login cookie while the rest of the site is cleaned (part of Pro, $9.99 once)</td></tr>
+    <tr><td>Open source</td><td class="yes">Yes — MIT, the store build comes from <a href="https://github.com/thoopring/cookiemop">the public repo</a>, no build step, no dependencies</td></tr>
+  </table>
+
+  <div class="note"><b>One real difference:</b> "cleaned when the browser closes" (greylist) is implemented as clean-on-next-startup, because that is the only reliable hook Manifest V3 offers. The practical effect is the same; the timing label is different. Limitations are documented in the <a href="https://github.com/thoopring/cookiemop#known-limitations">README</a>, not hidden.</div>
+
+  <h2>Why trust a new extension with all-site access</h2>
+  <p>You shouldn't have to take anyone's word for it. CookieMop makes <b>zero network requests</b> — no analytics, no accounts, no remote code, and nothing to phone home to. That claim is checkable: the entire runtime source is plain JavaScript on GitHub with no build step, so the code you read is the code that runs. Even the optional Pro license is verified on your own device.</p>
+
+  <h2>Questions</h2>
+  <p><b>Is it free?</b> Yes. Everything Cookie AutoDelete did for free is free here, permanently. Pro ($9.99, one payment, no subscription) adds two extras: rule profiles and the per-cookie whitelist.</p>
+  <p><b>Firefox?</b> Not yet — Chrome first, while the need is acute. The source is MIT-licensed if you want to help.</p>
+  <p><b>Something missing?</b> <a href="https://github.com/thoopring/cookiemop/issues">Open an issue</a> — the roadmap is shaped by what migrating users actually miss.</p>
+
+  <p style="margin-top:26px"><a class="btn" href="https://chromewebstore.google.com/detail/nbehnialaodjcffgjkckbnocggbdmdel">Install CookieMop — free</a></p>
+
+  <footer>
+    CookieMop is an independent project, not affiliated with Cookie AutoDelete's authors or Google.
+    <div style="margin-top:10px">
+      <a href="./index.html">Home</a>
+      <a href="./privacy.html">Privacy</a>
+      <a href="./terms.html">Terms</a>
+      <a href="https://github.com/thoopring/cookiemop">GitHub</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

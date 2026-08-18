@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://thoopring.github.io/cookiemop/sitemap.xml
