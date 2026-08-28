@@ -1,6 +1,6 @@
 {
   "extName": { "message": "CookieMop — Auto Delete Cookies on Tab Close" },
-  "extDesc": { "message": "Automatically deletes cookies & site data when you close a tab. Keep only the sites you trust. Local, open-source, no tracking." },
+  "extDesc": { "message": "Auto-delete cookies & site data on tab close. Open-source Cookie AutoDelete alternative for Manifest V3. Local, no tracking." },
 
   "popupProtecting": { "message": "Auto-clean is protecting this browser" },
   "popupPaused": { "message": "Auto-clean is paused" },

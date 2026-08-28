@@ -1,6 +1,6 @@
 {
   "extName": { "message": "CookieMop — 탭 닫으면 쿠키 자동 삭제" },
-  "extDesc": { "message": "탭을 닫는 순간 그 사이트의 쿠키와 사이트 데이터를 자동으로 삭제합니다. 신뢰하는 사이트만 남기세요. 100% 로컬, 오픈소스, 추적 없음." },
+  "extDesc": { "message": "탭을 닫는 순간 쿠키와 사이트 데이터를 자동 삭제합니다. Manifest V3 시대의 오픈소스 Cookie AutoDelete 대안. 100% 로컬, 추적 없음." },
 
   "popupProtecting": { "message": "자동 청소가 브라우저를 보호하고 있어요" },
   "popupPaused": { "message": "자동 청소가 일시중지됨" },
