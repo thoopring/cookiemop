@@ -71,7 +71,7 @@ Because verification is offline, Pro keeps working with no internet connection, 
 
 ## Known limitations
 
-- **Partitioned (CHIPS) cookies are not deleted.** Cookies that third-party embeds set with the `Partitioned` attribute cannot be enumerated per top-level site through the extension cookies API, so CookieMop leaves them alone for now. Chrome already isolates them per site, which sharply limits their tracking value.
+- **Partitioned (CHIPS) cookies are not deleted.** The Chrome cookies API operates on unpartitioned cookies unless a `partitionKey` is passed, and CookieMop never passes one, so cookies that third-party embeds set with the `Partitioned` attribute are left alone. This is a gap in CookieMop, not a limit of the API — `partitionKey` has been available since Chrome 119 and CookieMop requires 120. Passing it would cover the partition of the site whose tab you closed; what would stay out of reach is a site's cookies sitting inside *other* sites' partitions, since there is no way to enumerate every partition key. Chrome isolates partitioned cookies per top-level site regardless, which sharply limits their tracking value.
 - **Greylist timing.** "Cleaned when the browser closes" is implemented as clean-on-next-startup — the only reliable hook Manifest V3 offers. This pass also runs when the extension itself is reloaded or updated.
 - **Pro licensing is honour-based.** Verification happens on your device, so someone determined to patch the extension can bypass it. That is the price of never contacting a server, and we think it is the right trade.
 
