@@ -211,6 +211,34 @@ test('two lookups of the same order return the same key through the handler', as
   expect(first.body.licenseKey.startsWith('CM1.')).toBe(true);
 });
 
+test('a lookup leaves no email, order number or key in the function logs', async () => {
+  test.skip(!hasSigningKey, 'signing key not available');
+  // Distinctive values, so a match cannot be a coincidence with a short number.
+  const email = 'log-probe-7f3a@example.com';
+  const orderNumber = '8675309';
+  const logged = [];
+  const orig = { log: console.log, warn: console.warn, error: console.error, info: console.info };
+  for (const k of Object.keys(orig)) console[k] = (...a) => logged.push(a.map(String).join(' '));
+  let okRes;
+  try {
+    resetRateLimit();
+    globalThis.fetch = stubFetch(() => orderFixture({ user_email: email, order_number: Number(orderNumber) }));
+    okRes = makeRes();
+    await handler(makeReq({ body: { email, orderNumber } }), okRes);
+
+    resetRateLimit();
+    globalThis.fetch = stubFetch(() => orderFixture({ user_email: email, order_number: Number(orderNumber), status: 'pending' }));
+    await handler(makeReq({ body: { email, orderNumber } }), makeRes());
+  } finally {
+    Object.assign(console, orig);
+  }
+  expect(okRes.statusCode).toBe(200);
+  const all = logged.join(String.fromCharCode(10));
+  expect(all).not.toContain(email);
+  expect(all).not.toContain(orderNumber);
+  expect(all).not.toContain(okRes.body.licenseKey);
+});
+
 // --- handler behaviour ---------------------------------------------------
 
 test('handler rejects methods other than GET and POST', async () => {

@@ -140,8 +140,8 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'signing failed' });
   }
 
-  // Never log the key itself.
-  console.log('license issued for order', order.orderNumber);
+  // Nothing about a successful lookup is logged: the privacy policy says the
+  // email and order number are not stored, and function logs are storage.
   // orderNumber goes back so the page can fill in the field after an
   // id-based lookup, leaving the buyer with something they can reuse.
   return res.status(200).json({
