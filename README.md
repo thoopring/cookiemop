@@ -8,7 +8,7 @@ CookieMop is a Manifest V3 successor to Cookie AutoDelete: when you close a tab,
 
 ## Why people trust CookieMop
 
-- ✅ **100% local** — nothing ever leaves your browser. No servers, no requests.
+- ✅ **100% local** — nothing ever leaves your browser. The extension talks to no server and makes no requests.
 - ✅ **Open source** — this repository is the exact code that ships to the Chrome Web Store.
 - ✅ **No analytics, no accounts, no ads** — zero tracking of any kind.
 - ✅ **No remote code** — plain JavaScript, no build step, no dependencies.
@@ -77,7 +77,7 @@ Because verification is offline, Pro keeps working with no internet connection, 
 
 ## Privacy
 
-CookieMop makes **zero network requests**. It has no backend, collects nothing, and stores your settings only in Chrome's own extension storage. See for yourself — the code is all here.
+The CookieMop extension makes **zero network requests**. It collects nothing and stores your settings only in Chrome's own extension storage. Pro keys are verified on your device, with no activation call. The only Danorie endpoint is the key lookup page, which receives the email and order number you type so it can issue your key; it does not store them. See for yourself — the code is all here.
 
 Full privacy policy: https://thoopring.github.io/cookiemop/privacy.html
 
