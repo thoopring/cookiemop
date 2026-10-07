@@ -503,14 +503,19 @@ test('an order id route applies every other check too', async () => {
   expect((await byId({ test_mode: true }, { allowTestMode: true })).ok).toBe(true);
 });
 
-test('an id-route refusal is worded exactly like every other refusal', async () => {
-  const messages = new Set();
+test('every refusal is byte-identical — status, error code and message', async () => {
+  // Comparing only the message let a distinct status (402) and a distinct
+  // error code leak whether an order id exists. Compare the whole response.
+  const responses = new Set();
   const cases = [
     { body: { email: BUYER_EMAIL, orderId: 'does-not-exist' },
       stub: async () => ({ ok: false, status: 404, json: async () => ({}) }) },
     { body: { email: 'wrong@example.com', orderId: ORDER_ID }, stub: stubBothRoutes() },
     { body: { email: BUYER_EMAIL, orderId: ORDER_ID }, stub: stubBothRoutes({ status: 'pending' }) },
-    { body: { email: BUYER_EMAIL, orderNumber: '999999' }, stub: stubBothRoutes() }
+    { body: { email: BUYER_EMAIL, orderNumber: '999999' }, stub: stubBothRoutes() },
+    { body: { email: BUYER_EMAIL, orderId: ORDER_ID }, stub: stubBothRoutes({ store_id: 999 }) },
+    { body: { email: BUYER_EMAIL, orderId: ORDER_ID }, stub: stubBothRoutes({ first_order_item: { variant_id: 1 } }) },
+    { body: { email: BUYER_EMAIL, orderId: ORDER_ID }, stub: stubBothRoutes({ test_mode: true }) }
   ];
   for (const { body, stub } of cases) {
     resetRateLimit();
@@ -518,9 +523,9 @@ test('an id-route refusal is worded exactly like every other refusal', async () 
     const res = makeRes();
     await handler(makeReq({ body }), res);
     expect(res.body.licenseKey).toBeUndefined();
-    messages.add(res.body.message);
+    responses.add(JSON.stringify({ status: res.statusCode, body: res.body }));
   }
-  expect(messages.size).toBe(1);
+  expect(responses.size).toBe(1);
 });
 
 test('email alone is still not enough', async () => {

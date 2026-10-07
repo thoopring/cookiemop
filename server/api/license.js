@@ -25,7 +25,7 @@
 // page uses to show a warning banner while test orders are being accepted.
 
 import { signLicense } from '../lib/sign-license.js';
-import { verifyOrder, OrderProblem } from '../lib/lemonsqueezy.js';
+import { verifyOrder } from '../lib/lemonsqueezy.js';
 import { checkRateLimit, pruneRateLimit } from '../lib/rate-limit.js';
 import { evaluateTestMode, testModeWarning } from '../lib/test-mode.js';
 
@@ -121,10 +121,11 @@ export default async function handler(req, res) {
   }
 
   if (!order.ok) {
-    // Log the specific reason for the operator; return the generic one.
+    // The specific reason goes to the operator log only. The response must be
+    // identical for every refusal — status, error code and message — or the
+    // difference tells a caller which order ids exist.
     console.warn('lookup refused:', order.problem);
-    const status = order.problem === OrderProblem.NOT_PAID ? 402 : 404;
-    return res.status(status).json({ error: order.problem, message: NOT_FOUND_MESSAGE });
+    return res.status(404).json({ error: 'not-found', message: NOT_FOUND_MESSAGE });
   }
 
   let licenseKey;
