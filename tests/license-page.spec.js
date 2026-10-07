@@ -5,6 +5,7 @@
 // one response.
 
 import { test, expect, chromium } from '@playwright/test';
+import { listenOnSafePort } from './helpers.js';
 import http from 'node:http';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -54,15 +55,11 @@ function startPageServer(statusBody, onLookup) {
     res.setHeader('Content-Type', 'text/html');
     res.end(html);
   });
-  return new Promise((resolve) => {
-    server.listen(0, '127.0.0.1', () => {
-      resolve({
-        url: `http://127.0.0.1:${server.address().port}/license`,
-        posts,
-        close: () => new Promise((r) => server.close(r))
-      });
-    });
-  });
+  return listenOnSafePort(server).then((port) => ({
+    url: `http://127.0.0.1:${port}/license`,
+    posts,
+    close: () => new Promise((r) => server.close(r))
+  }));
 }
 
 let browser, context, server;

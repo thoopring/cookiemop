@@ -32,6 +32,27 @@ export async function launchWithExtension(userDataDir = '') {
   return { context, extensionId, sw };
 }
 
+// Chromium refuses to connect to these ports (net::ERR_UNSAFE_PORT). listen(0)
+// can hand one out on some hosts, which turns a good test into a random failure.
+const UNSAFE_PORTS = new Set([
+  1719, 1720, 1723, 2049, 3659, 4045, 4190, 5060, 5061, 6000,
+  6566, 6665, 6666, 6667, 6668, 6669, 6679, 6697, 10080
+]);
+
+/** server.listen(0) that retries until the OS-assigned port is one Chromium will connect to. */
+export async function listenOnSafePort(server) {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    await new Promise((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(0, '127.0.0.1', () => { server.off('error', reject); resolve(); });
+    });
+    const { port } = server.address();
+    if (!UNSAFE_PORTS.has(port)) return port;
+    await new Promise((r) => server.close(r));
+  }
+  throw new Error('could not get a Chromium-safe port after 20 attempts');
+}
+
 /**
  * Minimal HTTP server on 127.0.0.1 that sets a cookie on every response.
  * Returns { url, port, close }.
@@ -47,16 +68,11 @@ export function startCookieServer() {
     res.setHeader('Content-Type', 'text/html');
     res.end('<html><body>cookie server</body></html>');
   });
-  return new Promise((resolve) => {
-    server.listen(0, '127.0.0.1', () => {
-      const { port } = server.address();
-      resolve({
-        url: `http://127.0.0.1:${port}/`,
-        port,
-        close: () => new Promise((r) => server.close(r))
-      });
-    });
-  });
+  return listenOnSafePort(server).then((port) => ({
+    url: `http://127.0.0.1:${port}/`,
+    port,
+    close: () => new Promise((r) => server.close(r))
+  }));
 }
 
 /** Read cookies for a domain from inside the extension service worker. */

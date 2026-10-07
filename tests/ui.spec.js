@@ -38,6 +38,10 @@ test('popup renders header, segments, toggle and footer', async () => {
 test('popup enable toggle persists across reloads', async () => {
   const page = await context.newPage();
   await page.goto(popupUrl());
+  // The toggle handler reads popup state that only exists after the first
+  // render. #site-domain starts as "—" and changes in that render, so wait
+  // for it; clicking earlier throws inside the handler and nothing toggles.
+  await expect(page.locator('#site-domain')).not.toHaveText('—');
   await page.locator('#toggle-enabled').click();
   await expect(page.locator('#toggle-enabled')).toHaveAttribute('aria-checked', 'false');
   await page.reload();
