@@ -16,9 +16,14 @@ export async function launchWithExtension(userDataDir = '') {
   const context = await chromium.launchPersistentContext(userDataDir, {
     channel: 'chromium',
     headless: true,
+    // Pin the UI language: the popup picks its strings from the browser
+    // locale, and the assertions below expect English. Without this the suite
+    // passes or fails depending on the machine it runs on.
+    locale: 'en-US',
     args: [
       `--disable-extensions-except=${EXT_PATH}`,
-      `--load-extension=${EXT_PATH}`
+      `--load-extension=${EXT_PATH}`,
+      '--lang=en-US'
     ]
   });
   let [sw] = context.serviceWorkers();
