@@ -36,7 +36,7 @@ CookieMop is a Manifest V3 successor to Cookie AutoDelete: when you close a tab,
 
 ## Install
 
-- **Chrome Web Store**: https://chromewebstore.google.com/detail/nbehnialaodjcffgjkckbnocggbdmdel
+- **Chrome Web Store**: https://chromewebstore.google.com/detail/nbehnialaodjcffgjkckbnocggbdmdel?utm_source=github&utm_medium=readme
 - From source: clone this repo, open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the repo folder.
 
 ## Permissions, explained
