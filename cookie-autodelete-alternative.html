@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cookie AutoDelete alternative for Manifest V3 — migrate to CookieMop in two minutes</title>
-<meta name="description" content="Cookie AutoDelete stopped working when Chrome removed Manifest V2. CookieMop does the same job under current rules, and imports your old whitelist in one click.">
+<title>Cookie AutoDelete alternative for Manifest V3 — compare options, migrate in two minutes</title>
+<meta name="description" content="The original Cookie AutoDelete stopped working with Manifest V2. Compare the Manifest V3 options and import your whitelist into CookieMop in one click.">
 <link rel="canonical" href="https://thoopring.github.io/cookiemop/cookie-autodelete-alternative.html">
 <style>
   :root{--ink:#22252b;--soft:#6b7280;--faint:#9ca3af;--emerald:#10b981;--line:#eef0f2;--bg:#f6f8f9}
@@ -29,6 +29,8 @@
   th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);color:#3a414c;vertical-align:top}
   th{color:#8a919c;font-size:12.5px;letter-spacing:.06em}
   td:first-child{font-weight:600}
+  .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0}
+  .tscroll table{margin:0;min-width:560px}
   .yes{color:#059669;font-weight:700}
   .no{color:var(--faint)}
   .note{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;font-size:14px;color:#3a414c;margin:16px 0}
@@ -48,10 +50,10 @@
     </a>
   </header>
 
-  <h1>Cookie AutoDelete is gone. Here is how to replace it in two minutes.</h1>
-  <p class="lede">Chrome finished removing Manifest V2 extensions in August 2026, and Cookie AutoDelete went with them. CookieMop does the same job — delete a site's cookies when its last tab closes, keep the sites you whitelist — rebuilt from scratch for Manifest V3, open source, with a one-click import for your old whitelist.</p>
+  <h1>The original Cookie AutoDelete is gone. Here is how to replace it in two minutes.</h1>
+  <p class="lede">Chrome finished removing Manifest V2 extensions in August 2026, and the original Cookie AutoDelete went with them. There are now several Manifest V3 options, compared below. CookieMop does the same job — delete a site's cookies when its last tab closes, keep the sites you whitelist — rebuilt from scratch for Manifest V3, open source, with a one-click import for your old whitelist.</p>
 
-  <p><a class="btn" href="https://chromewebstore.google.com/detail/nbehnialaodjcffgjkckbnocggbdmdel">Install CookieMop — free</a></p>
+  <p><a class="btn" href="https://chromewebstore.google.com/detail/nbehnialaodjcffgjkckbnocggbdmdel?utm_source=landing&amp;utm_medium=site&amp;utm_campaign=cad-alternative">Install CookieMop — free</a></p>
 
   <h2>Migrate your whitelist</h2>
   <p>If you still have Cookie AutoDelete installed (even disabled), your rules can come across:</p>
@@ -76,15 +78,28 @@
 
   <div class="note"><b>One real difference:</b> "cleaned when the browser closes" (greylist) is implemented as clean-on-next-startup, because that is the only reliable hook Manifest V3 offers. The practical effect is the same; the timing label is different. Limitations are documented in the <a href="https://github.com/thoopring/cookiemop#known-limitations">README</a>, not hidden.</div>
 
+  <h2>Manifest V3 options, compared</h2>
+  <p>The original Cookie AutoDelete is gone, but it is no longer the only choice. Here is how the three Manifest V3 extensions that do this job differ, using only what each one publishes.</p>
+  <div class="tscroll">
+  <table>
+    <tr><th>AS OF 2026-10-14</th><th>COOKIE AUTODELETE V3</th><th>COOKIE GUARDIAN</th><th>COOKIEMOP</th></tr>
+    <tr><td>Source</td><td>Open source (MIT), per <a href="https://chromewebstore.google.com/detail/cookie-autodelete/jofioghmpdcgiiobkhmdojhjbjiejfbd">its store listing</a></td><td>Not open source, <a href="https://github.com/Cookie-AutoDelete/Cookie-AutoDelete/issues/1634#issuecomment-5526115052">as its developer states</a></td><td class="yes">Open source (MIT)</td></tr>
+    <tr><td>Price</td><td>No price shown on its listing</td><td>Free; Premium is <a href="https://chromewebstore.google.com/detail/cookie-guardian-auto-dele/gnoaanpbfnjakaddkecnnamnfkebhgle">$3.49 once</a></td><td>Free; Pro is $9.99 once</td></tr>
+    <tr><td>Free whitelist size</td><td>No limit stated on its listing</td><td>15 sites (23 after leaving a review), <a href="https://chromewebstore.google.com/detail/cookie-guardian-auto-dele/gnoaanpbfnjakaddkecnnamnfkebhgle">per its listing</a></td><td class="yes">No limit, no review needed</td></tr>
+    <tr><td>Licence check</td><td>No paid tier</td><td>Checks with a licensing server at start-up and hourly, <a href="https://github.com/Cookie-AutoDelete/Cookie-AutoDelete/issues/1634#issuecomment-5526115052">per its developer</a></td><td class="yes">Offline signature check on your device, no activation call</td></tr>
+  </table>
+  </div>
+  <div class="note"><b>Check before you decide.</b> These facts come from each extension's public store listing and one public GitHub thread, read on 2026-10-14. Listings change. CookieMop is an independent project and is not affiliated with either of the others. Where CookieMop falls short today: no wildcard patterns yet (see above), and Pro costs more than Cookie Guardian's Premium. If a free, MIT-licensed extension is all you need, Cookie AutoDelete V3 is a reasonable choice.</div>
+
   <h2>Why trust a new extension with all-site access</h2>
-  <p>You shouldn't have to take anyone's word for it. CookieMop makes <b>zero network requests</b> — no analytics, no accounts, no remote code, and nothing to phone home to. That claim is checkable: the entire runtime source is plain JavaScript on GitHub with no build step, so the code you read is the code that runs. Even the optional Pro license is verified on your own device.</p>
+  <p>You shouldn't have to take anyone's word for it. The CookieMop extension makes <b>zero network requests</b> — no analytics, no accounts, no remote code, and nothing to phone home to. That claim is checkable: the entire runtime source is plain JavaScript on GitHub with no build step, so the code you read is the code that runs. Even the optional Pro license is verified on your own device, with no activation call. The one Danorie endpoint is the key lookup page, which receives the email and order number you type so it can issue your key; it does not store them.</p>
 
   <h2>Questions</h2>
-  <p><b>Is it free?</b> Yes. Everything Cookie AutoDelete did for free is free here, permanently. Pro ($9.99, one payment, no subscription) adds two extras: rule profiles and the per-cookie whitelist.</p>
+  <p><b>Is it free?</b> Yes. The core is free and stays free: auto-clean on tab close, a whitelist and greylist with no size limit, the one-click import and the wider cleaning scopes. Nothing that was free has moved behind a payment. Pro ($9.99, one payment, no subscription) adds two extras: rule profiles and the per-cookie whitelist.</p>
   <p><b>Firefox?</b> Not yet — Chrome first, while the need is acute. The source is MIT-licensed if you want to help.</p>
   <p><b>Something missing?</b> <a href="https://github.com/thoopring/cookiemop/issues">Open an issue</a> — the roadmap is shaped by what migrating users actually miss.</p>
 
-  <p style="margin-top:26px"><a class="btn" href="https://chromewebstore.google.com/detail/nbehnialaodjcffgjkckbnocggbdmdel">Install CookieMop — free</a></p>
+  <p style="margin-top:26px"><a class="btn" href="https://chromewebstore.google.com/detail/nbehnialaodjcffgjkckbnocggbdmdel?utm_source=landing&amp;utm_medium=site&amp;utm_campaign=cad-alternative">Install CookieMop — free</a></p>
 
   <footer>
     CookieMop is an independent project, not affiliated with Cookie AutoDelete's authors or Google.
