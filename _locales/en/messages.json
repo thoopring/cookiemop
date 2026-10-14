@@ -81,7 +81,7 @@
   "proFeatureProfiles": { "message": "Rule profiles — separate rules for work and personal browsing, switched with one click" },
   "proFeatureCookieWhitelist": { "message": "Per-cookie whitelist — clean a site but keep the one cookie that keeps you logged in" },
   "proPrice": { "message": "$9.99" },
-  "proPriceNote": { "message": "once — we have no servers, so we don't charge you monthly." },
+  "proPriceNote": { "message": "once — there is nothing to renew, so we never charge you monthly." },
   "proBuy": { "message": "Get Pro" },
   "proLocalNote": { "message": "Your license is verified on this device. CookieMop still makes zero network requests, even with Pro." },
   "proHaveKey": { "message": "Already bought it? Paste your license key" },
