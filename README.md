@@ -52,7 +52,7 @@ CookieMop is a Manifest V3 successor to Cookie AutoDelete: when you close a tab,
 
 ## CookieMop Pro
 
-The core of CookieMop is free forever, and nothing that was free in v1.0 has moved behind a payment. Pro is additive: rule profiles, a per-cookie whitelist, and more to come. It costs $9.99 once — we have no servers, so we don't charge you monthly.
+The core of CookieMop is free forever, and nothing that was free in v1.0 has moved behind a payment. Pro is additive: rule profiles, a per-cookie whitelist, and more to come. It costs $9.99 once — there is nothing to renew, so we never charge you monthly.
 
 **Pro does not add a single network request.** There is no license server to phone, no activation call, and no usage reporting. Verify that claim yourself:
 
