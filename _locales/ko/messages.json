@@ -80,7 +80,7 @@
   "proPitch": { "message": "CookieMop의 핵심 기능은 계속 무료입니다. Pro는 고급 사용자를 위한 기능을 더할 뿐이고, 한 번만 결제하면 됩니다." },
   "proFeatureProfiles": { "message": "규칙 프로필 — 업무용과 개인용 규칙을 따로 두고 한 번의 클릭으로 전환" },
   "proFeatureCookieWhitelist": { "message": "쿠키 단위 화이트리스트 — 사이트는 청소하되 로그인 쿠키 하나만 남기기" },
-  "proPrice": { "message": "$9.99" },
+  "proPrice": { "message": "$$9.99" },
   "proPriceNote": { "message": "한 번만 — 갱신할 것이 없으니 매달 받지 않습니다." },
   "proBuy": { "message": "Pro 구매" },
   "proLocalNote": { "message": "라이선스는 이 기기에서 검증됩니다. Pro를 켜도 CookieMop은 네트워크 요청을 하지 않습니다." },

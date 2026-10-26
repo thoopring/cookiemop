@@ -208,3 +208,9 @@ test('popup rule segment sets and clears a whitelist rule for the current site',
   rules = await sw.evaluate(async () => (await chrome.storage.sync.get('rules')).rules);
   expect(rules['127.0.0.1']).toBeUndefined();
 });
+
+test('the Pro price renders as $9.99 — a bare "$9" in a message is a placeholder', async () => {
+  const page = await context.newPage();
+  await page.goto(optionsUrl());
+  await expect(page.locator('.pro-price b')).toHaveText('$9.99');
+});
