@@ -291,7 +291,7 @@ await hold(400);
 // --- 6. Buying and activating -------------------------------------------
 
 await stage.goto(site.licenceUrl, { waitUntil: 'domcontentloaded' });
-await caption(stage, 'Buy once, and your key is waiting immediately', 'No email to wait for, nothing sent by hand');
+await caption(stage, 'Buy once, and your key is waiting immediately', 'Your key is one lookup away. No waiting.');
 await hold(3000);
 await stage.locator('#email').type('you@example.com', { delay: 55 });
 await stage.locator('#order').type('1042', { delay: 90 });
@@ -316,7 +316,7 @@ await stage.evaluate(() => {
   window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 40 });
 });
 await hold(700);
-await caption(stage, 'Paste it once, and Pro is on', 'Verified on your device — no licence server');
+await caption(stage, 'Paste it once, and Pro is on', 'Checked on your device, no license server');
 await stage.locator('#license-input').type(demoKey.slice(0, 46), { delay: 16 });
 await hold(300);
 await stage.locator('#license-input').fill(demoKey);
@@ -330,7 +330,7 @@ await hold(400);
 
 await caption(
   stage,
-  '100% local. Open source. Zero network requests.',
+  'Runs locally. Open source. The extension itself makes no network requests.',
   'Free to install · Pro is $9.99 once, no subscription'
 );
 await hold(4600);
